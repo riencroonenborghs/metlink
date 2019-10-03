@@ -1,0 +1,1 @@
+String apiUrl = "https://www.metlink.org.nz/api/v1";
