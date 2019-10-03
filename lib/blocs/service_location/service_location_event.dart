@@ -6,8 +6,8 @@ abstract class ServiceLocationEvent extends Equatable {
 }
 
 class ServiceLocationPerformEvent extends ServiceLocationEvent {
-  final String number;
-  ServiceLocationPerformEvent({@required this.number})
-      : assert(number != null),
-        super([number]);
+  final String code;
+  ServiceLocationPerformEvent({@required this.code})
+      : assert(code != null),
+        super([code]);
 }

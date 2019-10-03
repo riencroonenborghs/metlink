@@ -11,7 +11,6 @@ class StopDeparturesService {
     var url = searchUrl + query;
     return new NetworkService().get(url).then((dynamic res) {
       var body = json.decode(res.body);
-      print(body);
       return body;
     });
   }

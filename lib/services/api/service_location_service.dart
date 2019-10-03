@@ -9,6 +9,7 @@ class ServiceLocationService {
 
   Future<dynamic> search(String query) {
     var url = searchUrl + query;
+    print(url);
     return new NetworkService().get(url).then((dynamic res) {
       var body = json.decode(res.body);
       print(body);
