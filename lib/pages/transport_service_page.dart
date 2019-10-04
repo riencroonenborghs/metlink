@@ -22,6 +22,7 @@ class _TransportServicePageState extends State<TransportServicePage> with UtilsW
   BuildContext buildContext;
   ServiceLocationBloc serviceLocationBloc = new ServiceLocationBloc();
   List<Marker> markers;
+  List<ServiceLocation> serviceLocations;
 
   // List<double> zoomOptions = [2.0, 4.0, 6.0, 8.0, 10.0, 12.0];
   // double zoom = 15.0;
@@ -35,9 +36,9 @@ class _TransportServicePageState extends State<TransportServicePage> with UtilsW
         ),
         layers: [
           TileLayerOptions(
-              urlTemplate:
-                  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              subdomains: ['a', 'b', 'c']),
+            urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            subdomains: ["a", "b", "c"]
+          ),
           MarkerLayerOptions(markers: markers)
         ],
       ),
@@ -59,12 +60,11 @@ class _TransportServicePageState extends State<TransportServicePage> with UtilsW
         }
         if(serviceLocationState is ServiceLocationDoneState) {
           markers = new List<Marker>();
-          var services = serviceLocationState.result["Services"];
-          services.forEach((service) {
+          serviceLocationState.serviceLocations.forEach((serviceLocation) {
             Marker marker = Marker(
               width: 80.0,
               height: 80.0,
-              point: LatLng(double.parse(service["Lat"]), double.parse(service["Long"])),
+              point: LatLng(serviceLocation.lat, serviceLocation.long),
               builder: (ctx) => Container(
                 child: Icon(Icons.location_on)
               )

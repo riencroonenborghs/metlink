@@ -1,5 +1,6 @@
 import "package:meta/meta.dart";
 import "package:equatable/equatable.dart";
+import "package:metlink/models/models.dart";
 
 abstract class ServiceLocationState extends Equatable {
   ServiceLocationState([List props = const []]) : super(props);
@@ -10,10 +11,10 @@ class ServiceLocationInitialState extends ServiceLocationState {}
 class ServiceLocationSearchingState extends ServiceLocationState {}
 
 class ServiceLocationDoneState extends ServiceLocationState {
-  final dynamic result;
-  ServiceLocationDoneState({@required this.result})
-      : assert(result != null),
-        super([result]);
+  final List<ServiceLocation> serviceLocations;
+  ServiceLocationDoneState({@required this.serviceLocations})
+      : assert(serviceLocations != null),
+        super([serviceLocations]);
 }
 
 

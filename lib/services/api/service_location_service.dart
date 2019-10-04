@@ -3,6 +3,7 @@ import "dart:convert";
 
 import "package:metlink/constants.dart";
 import "package:metlink/services/services.dart";
+import "package:metlink/models/models.dart";
 
 class ServiceLocationService {
   var searchUrl = "$apiUrl/ServiceLocation/";
@@ -11,7 +12,11 @@ class ServiceLocationService {
     var url = searchUrl + query;
     return new NetworkService().get(url).then((dynamic res) {
       var body = json.decode(res.body);
-      return body;
+      List<ServiceLocation> serviceLocations = List<ServiceLocation>();
+      body["Services"].forEach((data) {
+        serviceLocations.add(ServiceLocation.fromMap(data));
+      });
+      return serviceLocations;
     });
   }
 }

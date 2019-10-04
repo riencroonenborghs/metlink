@@ -23,7 +23,7 @@ class _StopPageState extends State<StopPage> with UtilsWidget {
   Widget _searchList(List<TransportService> transportServices) {
     List<Widget> cards = new List<Widget>();
 
-    Map<String, TransportService> services = new Map<String, String>();
+    Map<String, TransportService> services = new Map<String, TransportService>();
     transportServices.forEach((transportService) {
       if(!services.keys.contains(transportService.code)) {
         services[transportService.code] = transportService;
