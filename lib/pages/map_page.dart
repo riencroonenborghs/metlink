@@ -174,7 +174,10 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
         padding: EdgeInsets.all(8.0),
         child: Column(
           children: [
-            leftAlignText("Going to ${widget.serviceLocation.destinationStopName}"),
+            Padding(
+              padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+              child: leftAlignText("Going to ${widget.serviceLocation.destinationStopName}.")
+            ),
             _searchResults()
           ]
         )
