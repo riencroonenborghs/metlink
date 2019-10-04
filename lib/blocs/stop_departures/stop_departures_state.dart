@@ -1,5 +1,6 @@
 import "package:meta/meta.dart";
 import "package:equatable/equatable.dart";
+import "package:metlink/models/models.dart";
 
 abstract class StopDeparturesState extends Equatable {
   StopDeparturesState([List props = const []]) : super(props);
@@ -10,10 +11,10 @@ class StopDeparturesInitialState extends StopDeparturesState {}
 class StopDeparturesSearchingState extends StopDeparturesState {}
 
 class StopDeparturesDoneState extends StopDeparturesState {
-  final dynamic result;
-  StopDeparturesDoneState({@required this.result})
-      : assert(result != null),
-        super([result]);
+  final List<TransportService> transportServices;
+  StopDeparturesDoneState({@required this.transportServices})
+      : assert(transportServices != null),
+        super([transportServices]);
 }
 
 

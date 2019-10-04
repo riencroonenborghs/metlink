@@ -5,9 +5,10 @@ import "package:metlink/widgets/widgets.dart";
 import "package:metlink/services/services.dart";
 import "package:metlink/blocs/blocs.dart";
 import "package:metlink/pages/pages.dart";
+import "package:metlink/models/models.dart";
 
 class StopPage extends StatefulWidget {
-  final String stop;
+  final Stop stop;
 
   StopPage({Key key, @required this.stop}) : super(key: key);
 
@@ -19,16 +20,13 @@ class _StopPageState extends State<StopPage> with UtilsWidget {
   BuildContext buildContext;
   StopDeparturesBloc stopDeparturesBloc = new StopDeparturesBloc();
 
-  Widget _searchList(List result) {
+  Widget _searchList(List<TransportService> transportServices) {
     List<Widget> cards = new List<Widget>();
 
     Map<String, String> services = new Map<String, String>();
-    result.forEach((item) {
-      dynamic service = item["Service"];
-      String code = service["Code"];
-      String name = service["Name"];
-      if(!services.keys.contains(code)) {
-        services[code] = name;
+    transportServices.forEach((transportService) {
+      if(!services.keys.contains(transportService.code)) {
+        services[transportService.code] = transportService.name;
       }
     });
 
@@ -61,24 +59,24 @@ class _StopPageState extends State<StopPage> with UtilsWidget {
   Widget _searchResults() {
     return BlocBuilder<StopDeparturesEvent, StopDeparturesState>(
       bloc: stopDeparturesBloc,
-      builder: (_, StopDeparturesState serviceLocationState) {
-        if(serviceLocationState is StopDeparturesInitialState) {
+      builder: (_, StopDeparturesState stopDeparturesState) {
+        if(stopDeparturesState is StopDeparturesInitialState) {
           return Container();
         }
-        if(serviceLocationState is StopDeparturesSearchingState) {
+        if(stopDeparturesState is StopDeparturesSearchingState) {
           return waiting(buildContext, "Searching...");
         }
-        if(serviceLocationState is StopDeparturesErrorState) {
+        if(stopDeparturesState is StopDeparturesErrorState) {
           return errorMessage("Something went wrong :(");
         }
-        if(serviceLocationState is StopDeparturesDoneState) {
-          if(serviceLocationState.result == null) {
+        if(stopDeparturesState is StopDeparturesDoneState) {
+          if(stopDeparturesState.transportServices.length == 0) {
             return Padding(
               padding: EdgeInsets.only(top: 8.0),
               child: leftAlignText("Nothing found")
             );
           } else {
-            return _searchList(serviceLocationState.result["Services"]);
+            return _searchList(stopDeparturesState.transportServices);
           }
         }
       }
@@ -93,13 +91,13 @@ class _StopPageState extends State<StopPage> with UtilsWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Stop ${widget.stop}")
+        title: Text("Stop ${widget.stop.name}")
       ),
       body: Padding(
         padding: EdgeInsets.all(8.0),
         child: Column(
           children: [
-            leftAlignText("Services"),
+            leftAlignText("Services for stop ${widget.stop.code}"),
             _searchResults()
           ]
         )

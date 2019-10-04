@@ -2,6 +2,7 @@ import "dart:async";
 import "dart:convert";
 
 import "package:metlink/constants.dart";
+import "package:metlink/models/models.dart";
 import "package:metlink/services/services.dart";
 
 class StopSearchService {
@@ -11,7 +12,11 @@ class StopSearchService {
     var url = searchUrl + query;
     return new NetworkService().get(url).then((dynamic res) {
       var body = json.decode(res.body);
-      return body;
+      List<Stop> stops = List<Stop>();
+      body.forEach((data) {
+        stops.add(Stop.fromMap(data));
+      });
+      return stops;
     });
   }
 }

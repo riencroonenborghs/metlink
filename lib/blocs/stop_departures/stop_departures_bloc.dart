@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:bloc/bloc.dart";
 import "package:metlink/blocs/blocs.dart";
 import "package:metlink/services/services.dart";
+import "package:metlink/models/models.dart";
 
 class StopDeparturesBloc extends Bloc<StopDeparturesEvent, StopDeparturesState> {
   final StopDeparturesService stopDeparturesService = new StopDeparturesService();
@@ -16,8 +17,8 @@ class StopDeparturesBloc extends Bloc<StopDeparturesEvent, StopDeparturesState> 
     if(event is StopDeparturesPerformEvent) {
       yield StopDeparturesSearchingState();
       try {
-        dynamic data = await stopDeparturesService.search(event.stop);        
-        yield StopDeparturesDoneState(result: data);
+        List<TransportService> transportServices = await stopDeparturesService.search(event.stop);        
+        yield StopDeparturesDoneState(transportServices: transportServices);
       } catch (_) {
         yield StopDeparturesErrorState();
       }

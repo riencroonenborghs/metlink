@@ -4,6 +4,7 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "package:metlink/widgets/widgets.dart";
 import "package:metlink/services/services.dart";
 import "package:metlink/blocs/blocs.dart";
+import "package:metlink/models/models.dart";
 import "package:metlink/pages/pages.dart";
 
 class StopSearchPage extends StatefulWidget {
@@ -17,18 +18,18 @@ class _StopSearchPageState extends State<StopSearchPage> with UtilsWidget {
   BuildContext buildContext;
   StopSearchBloc searchBloc = new StopSearchBloc();
 
-  Widget _searchList(List result) {
+  Widget _searchList(List<Stop> stops) {
     List<Widget> cards = new List<Widget>();
-    result.forEach((item) {
+    stops.forEach((stop) {
       Card card = Card(
         child: ListTile(
-          title: Text(item["Name"]),
+          title: Text(stop.name),
           trailing: Icon(Icons.chevron_right),
           onTap: () {
             Navigator.push(
               buildContext,
               MaterialPageRoute(
-                builder: (context) => StopPage(stop: item["Sms"])
+                builder: (context) => StopPage(stop: stop)
               )
             );
           }
@@ -61,13 +62,13 @@ class _StopSearchPageState extends State<StopSearchPage> with UtilsWidget {
           return errorMessage("Something went wrong :(");
         }
         if(searchState is StopSearchDoneState) {
-          if(searchState.result.length == 0) {
+          if(searchState.stops.length == 0) {
             return Padding(
               padding: EdgeInsets.only(top: 8.0),
               child: leftAlignText("Nothing found")
             );
           } else {
-            return _searchList(searchState.result);
+            return _searchList(searchState.stops);
           }
         }
       }
