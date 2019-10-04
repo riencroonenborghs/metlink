@@ -50,7 +50,9 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
               child: Container(
                 child: Transform.rotate(
                   angle: serviceLocation.bearingRadians,
-                  child: Image.asset("assets/images/bus-primary.png")
+                  child: serviceLocation.bearing < 180 ? 
+                    Image.asset("assets/images/bus-primary-going-east.png") :
+                    Image.asset("assets/images/bus-primary-going-west.png")
                 )
               )
             )

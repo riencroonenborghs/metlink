@@ -1,5 +1,6 @@
-import "package:metlink/models/models.dart";
 import "dart:math";
+import "package:geolocator/geolocator.dart";
+import "package:metlink/models/models.dart";
 
 class ServiceLocation {
   String _direction;
@@ -11,6 +12,8 @@ class ServiceLocation {
   String _destinationStopName;
   double _bearing;
   double _bearingRadians;
+  String _approxAddress;
+  bool _triedResolvingAddress = false;
   StopDeparture _stopDeparture;
 
   String get direction => _direction;
@@ -22,6 +25,8 @@ class ServiceLocation {
   String get destinationStopName => _destinationStopName;
   double get bearing => _bearing;
   double get bearingRadians => _bearingRadians;
+  String get approxAddress => _approxAddress;
+  bool get triedResolvingAddress => _triedResolvingAddress;
   StopDeparture get stopDeparture => _stopDeparture;
 
   ServiceLocation.fromMap(dynamic obj) {
@@ -35,5 +40,15 @@ class ServiceLocation {
     this._bearing = double.parse(obj["Bearing"]);
     this._bearingRadians =  this._bearing * pi / 180; // Deg × π/180 = Radians
     this._stopDeparture = StopDeparture.fromMap(obj["Service"]);
+  }
+
+  Future<void> getApproxAddress() async {
+    if(!_triedResolvingAddress) {
+      _triedResolvingAddress = true;
+      List<Placemark> placemarks = await Geolocator().placemarkFromCoordinates(_lat, _long);
+      placemarks.forEach((placemark) {
+        _approxAddress = "${placemark.subThoroughfare} ${placemark.thoroughfare}";
+      });
+    }
   }
 }

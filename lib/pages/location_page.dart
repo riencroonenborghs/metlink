@@ -19,19 +19,55 @@ class LocationPage extends StatefulWidget {
 class _LocationPageState extends State<LocationPage> with UtilsWidget {
   BuildContext buildContext;
   ServiceLocationBloc serviceLocationBloc = new ServiceLocationBloc();
+  bool _ignore = false;
+
+  _resolveAddress(ServiceLocation serviceLocation) {
+    serviceLocation.getApproxAddress().then((_){
+      setState((){ _ignore = !_ignore; });
+    });
+  }
  
   Widget _searchList(List<ServiceLocation> serviceLocations) {
     List<Widget> cards = new List<Widget>();
     serviceLocations.forEach((serviceLocation) {
       String title = "Vehicle ${serviceLocation.vehicleRef} going to ${serviceLocation.destinationStopName}";
-      String subtitle = "";
+      List<Widget> subtitles = new List<Widget>();
       if(serviceLocation.isBehind) {
-        subtitle = "delayed by ${(serviceLocation.delayInS / 60).ceil()} minutes.";
+        subtitles.add(
+          leftAlign(
+            Row(
+              children: [
+                Icon(Icons.access_time, size: 18, color: Colors.grey),
+                Text("Delayed by ${(serviceLocation.delayInS / 60).ceil()} minutes.")
+              ]
+            )
+          )
+        );
       }
+      if(serviceLocation.approxAddress != null && serviceLocation.approxAddress != null) {
+        subtitles.add(
+          leftAlign(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(Icons.location_on, size: 18, color: Colors.grey),
+                Expanded(
+                  child: Text("Located somwehere around ${serviceLocation.approxAddress}.", softWrap: true)
+                )
+              ]
+            )
+          )
+        );
+      }
+      _resolveAddress(serviceLocation);
       Card card = Card(
         child: ListTile(
           title: Text(title),
-          subtitle: Text(subtitle),
+          subtitle: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: subtitles
+          ),
           trailing: Icon(Icons.chevron_right),
           onTap: () {
             Navigator.push(
