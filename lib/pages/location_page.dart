@@ -9,16 +9,16 @@ import "package:metlink/blocs/blocs.dart";
 import "package:metlink/pages/pages.dart";
 import "package:metlink/models/models.dart";
 
-class TransportServicePage extends StatefulWidget {
+class LocationPage extends StatefulWidget {
   final TransportService transportService;
 
-  TransportServicePage({Key key, @required this.transportService}) : super(key: key);
+  LocationPage({Key key, @required this.transportService}) : super(key: key);
 
   @override
-  _TransportServicePageState createState() => _TransportServicePageState();
+  _LocationPageState createState() => _LocationPageState();
 }
 
-class _TransportServicePageState extends State<TransportServicePage> with UtilsWidget {
+class _LocationPageState extends State<LocationPage> with UtilsWidget {
   BuildContext buildContext;
   ServiceLocationBloc serviceLocationBloc = new ServiceLocationBloc();
   List<Marker> markers;

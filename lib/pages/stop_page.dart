@@ -40,7 +40,7 @@ class _StopPageState extends State<StopPage> with UtilsWidget {
           onTap: () {
             Navigator.push(
               buildContext,
-              MaterialPageRoute(builder: (BuildContext buildContext) => TransportServicePage(transportService: transportService))
+              MaterialPageRoute(builder: (BuildContext buildContext) => LocationPage(transportService: transportService))
             );
           }
         ),
