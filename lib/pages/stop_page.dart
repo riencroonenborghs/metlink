@@ -93,13 +93,14 @@ class _StopPageState extends State<StopPage> with UtilsWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Stop ${widget.stop.name}")
+        title: Text("Stop ${widget.stop.code}")
       ),
       body: Padding(
         padding: EdgeInsets.all(8.0),
         child: Column(
           children: [
-            leftAlignText("Services for stop ${widget.stop.code}"),
+            leftAlignText(widget.stop.name),
+            leftAlignText("Services for this stop:"),
             _searchResults()
           ]
         )

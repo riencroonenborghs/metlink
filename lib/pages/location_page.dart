@@ -1,7 +1,5 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong/latlong.dart';
 
 import "package:metlink/widgets/widgets.dart";
 import "package:metlink/services/services.dart";
@@ -21,31 +19,44 @@ class LocationPage extends StatefulWidget {
 class _LocationPageState extends State<LocationPage> with UtilsWidget {
   BuildContext buildContext;
   ServiceLocationBloc serviceLocationBloc = new ServiceLocationBloc();
-  List<Marker> markers;
-  List<ServiceLocation> serviceLocations;
-
-  // List<double> zoomOptions = [2.0, 4.0, 6.0, 8.0, 10.0, 12.0];
-  // double zoom = 15.0;
-
-  Widget _showMap() {
-    return Flexible(
-      child: FlutterMap(
-        options: MapOptions(
-          center: markers[0].point,
-          zoom: 15.0,
+ 
+  Widget _searchList(List<ServiceLocation> serviceLocations) {
+    List<Widget> cards = new List<Widget>();
+    serviceLocations.forEach((serviceLocation) {
+      String title = "Vehicle ${serviceLocation.vehicleRef} going to ${serviceLocation.destinationStopName}";
+      String subtitle = "";
+      if(serviceLocation.isBehind) {
+        subtitle = "delayed by ${(serviceLocation.delayInS / 60).ceil()} minutes.";
+      }
+      Card card = Card(
+        child: ListTile(
+          title: Text(title),
+          subtitle: Text(subtitle),
+          trailing: Icon(Icons.chevron_right),
+          onTap: () {
+            Navigator.push(
+              buildContext,
+              MaterialPageRoute(
+                builder: (context) => MapPage(serviceLocation: serviceLocation)
+              )
+            );
+          }
         ),
-        layers: [
-          TileLayerOptions(
-            urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            subdomains: ["a", "b", "c"]
-          ),
-          MarkerLayerOptions(markers: markers)
-        ],
-      ),
+      );
+      cards.add(card);
+    });
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.only(top: 8.0),
+        child: ListView(
+          shrinkWrap: true,
+          children: cards
+        )
+      )
     );
   }
 
-  Widget _loadTransportVehicles() {
+  Widget _searchResults() {
     return BlocBuilder<ServiceLocationEvent, ServiceLocationState>(
       bloc: serviceLocationBloc,
       builder: (_, ServiceLocationState serviceLocationState) {
@@ -59,39 +70,34 @@ class _LocationPageState extends State<LocationPage> with UtilsWidget {
           return errorMessage("Something went wrong :(");
         }
         if(serviceLocationState is ServiceLocationDoneState) {
-          markers = new List<Marker>();
-          serviceLocationState.serviceLocations.forEach((serviceLocation) {
-            Marker marker = Marker(
-              width: 80.0,
-              height: 80.0,
-              point: LatLng(serviceLocation.lat, serviceLocation.long),
-              builder: (ctx) => Container(
-                child: Icon(Icons.location_on)
-              )
-            );
-            markers.add(marker);
-          });
-          return _showMap();
+          return _searchList(serviceLocationState.serviceLocations);
         }
       }
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    buildContext = context;
+  void initState() {
+    super.initState();
     serviceLocationBloc = new ServiceLocationBloc();
     serviceLocationBloc.dispatch(ServiceLocationPerformEvent(code: widget.transportService.code));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    buildContext = context;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Service ${widget.transportService.code} - ${widget.transportService.name}")
+        title: Text("Service ${widget.transportService.code}")
       ),
       body: Padding(
         padding: EdgeInsets.all(8.0),
         child: Column(
           children: [
-            _loadTransportVehicles()
+            leftAlignText(widget.transportService.name),
+            leftAlignText("Vehicles on the road:"),
+            _searchResults()
           ]
         )
       )
