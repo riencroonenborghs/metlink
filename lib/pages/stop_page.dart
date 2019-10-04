@@ -23,22 +23,24 @@ class _StopPageState extends State<StopPage> with UtilsWidget {
   Widget _searchList(List<TransportService> transportServices) {
     List<Widget> cards = new List<Widget>();
 
-    Map<String, String> services = new Map<String, String>();
+    Map<String, TransportService> services = new Map<String, String>();
     transportServices.forEach((transportService) {
       if(!services.keys.contains(transportService.code)) {
-        services[transportService.code] = transportService.name;
+        services[transportService.code] = transportService;
       }
     });
 
-    services.entries.forEach((service) {
+    services.entries.forEach((entry) {
+      String code = entry.key;
+      TransportService transportService = entry.value;
       Card card = Card(
         child: ListTile(
-          title: Text("${service.key} - ${service.value}"),
+          title: Text("${transportService.code} - ${transportService.name}"),
           trailing: Icon(Icons.chevron_right),
           onTap: () {
             Navigator.push(
               buildContext,
-              MaterialPageRoute(builder: (BuildContext buildContext) => ServicePage(code: service.key, name: service.value))
+              MaterialPageRoute(builder: (BuildContext buildContext) => TransportServicePage(transportService: transportService))
             );
           }
         ),

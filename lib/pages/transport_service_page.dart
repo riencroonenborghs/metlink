@@ -7,21 +7,18 @@ import "package:metlink/widgets/widgets.dart";
 import "package:metlink/services/services.dart";
 import "package:metlink/blocs/blocs.dart";
 import "package:metlink/pages/pages.dart";
+import "package:metlink/models/models.dart";
 
-// pk.eyJ1IjoicmllbmMiLCJhIjoiY2sxYWVkemxjMmJ6ODNrbzN3dGxjNW56aSJ9.nl5Z8uvIm0nTCQGxpoy-Ug
+class TransportServicePage extends StatefulWidget {
+  final TransportService transportService;
 
-
-class ServicePage extends StatefulWidget {
-  final String code;
-  final String name;
-
-  ServicePage({Key key, @required this.code, @required this.name}) : super(key: key);
+  TransportServicePage({Key key, @required this.transportService}) : super(key: key);
 
   @override
-  _ServicePageState createState() => _ServicePageState();
+  _TransportServicePageState createState() => _TransportServicePageState();
 }
 
-class _ServicePageState extends State<ServicePage> with UtilsWidget {
+class _TransportServicePageState extends State<TransportServicePage> with UtilsWidget {
   BuildContext buildContext;
   ServiceLocationBloc serviceLocationBloc = new ServiceLocationBloc();
   List<Marker> markers;
@@ -33,7 +30,6 @@ class _ServicePageState extends State<ServicePage> with UtilsWidget {
     return Flexible(
       child: FlutterMap(
         options: MapOptions(
-          // center: LatLng(51.5, -0.09),
           center: markers[0].point,
           zoom: 15.0,
         ),
@@ -48,7 +44,7 @@ class _ServicePageState extends State<ServicePage> with UtilsWidget {
     );
   }
 
-  Widget _loadBuses() {
+  Widget _loadTransportVehicles() {
     return BlocBuilder<ServiceLocationEvent, ServiceLocationState>(
       bloc: serviceLocationBloc,
       builder: (_, ServiceLocationState serviceLocationState) {
@@ -85,18 +81,17 @@ class _ServicePageState extends State<ServicePage> with UtilsWidget {
   Widget build(BuildContext context) {
     buildContext = context;
     serviceLocationBloc = new ServiceLocationBloc();
-    serviceLocationBloc.dispatch(ServiceLocationPerformEvent(code: widget.code));
+    serviceLocationBloc.dispatch(ServiceLocationPerformEvent(code: widget.transportService.code));
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Service ${widget.code} - ${widget.name}")
+        title: Text("Service ${widget.transportService.code} - ${widget.transportService.name}")
       ),
       body: Padding(
         padding: EdgeInsets.all(8.0),
         child: Column(
           children: [
-            // leftAlignText("Map"),
-            _loadBuses()
+            _loadTransportVehicles()
           ]
         )
       )
