@@ -8,9 +8,9 @@ import "package:metlink/pages/pages.dart";
 import "package:metlink/models/models.dart";
 
 class LocationPage extends StatefulWidget {
-  final TransportService transportService;
+  final StopDeparture stopDeparture;
 
-  LocationPage({Key key, @required this.transportService}) : super(key: key);
+  LocationPage({Key key, @required this.stopDeparture}) : super(key: key);
 
   @override
   _LocationPageState createState() => _LocationPageState();
@@ -80,7 +80,7 @@ class _LocationPageState extends State<LocationPage> with UtilsWidget {
   void initState() {
     super.initState();
     serviceLocationBloc = new ServiceLocationBloc();
-    serviceLocationBloc.dispatch(ServiceLocationPerformEvent(code: widget.transportService.code));
+    serviceLocationBloc.dispatch(ServiceLocationPerformEvent(code: widget.stopDeparture.code));
   }
 
   @override
@@ -89,13 +89,13 @@ class _LocationPageState extends State<LocationPage> with UtilsWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Service ${widget.transportService.code}")
+        title: Text("Service ${widget.stopDeparture.code}")
       ),
       body: Padding(
         padding: EdgeInsets.all(8.0),
         child: Column(
           children: [
-            leftAlignText(widget.transportService.name),
+            leftAlignText(widget.stopDeparture.name),
             leftAlignText("Vehicles on the road:"),
             _searchResults()
           ]

@@ -11,10 +11,10 @@ class StopDeparturesInitialState extends StopDeparturesState {}
 class StopDeparturesSearchingState extends StopDeparturesState {}
 
 class StopDeparturesDoneState extends StopDeparturesState {
-  final List<TransportService> transportServices;
-  StopDeparturesDoneState({@required this.transportServices})
-      : assert(transportServices != null),
-        super([transportServices]);
+  final List<StopDeparture> stopDepartures;
+  StopDeparturesDoneState({@required this.stopDepartures})
+      : assert(stopDepartures != null),
+        super([stopDepartures]);
 }
 
 

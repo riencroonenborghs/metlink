@@ -1,4 +1,5 @@
 import "package:metlink/models/models.dart";
+import "dart:math";
 
 class ServiceLocation {
   String _direction;
@@ -8,7 +9,9 @@ class ServiceLocation {
   num _delayInS;
   String _vehicleRef;
   String _destinationStopName;
-  TransportService _transportService;
+  double _bearing;
+  double _bearingRadians;
+  StopDeparture _stopDeparture;
 
   String get direction => _direction;
   double get lat => _lat;
@@ -17,7 +20,9 @@ class ServiceLocation {
   num get delayInS => _delayInS;
   String get vehicleRef => _vehicleRef;
   String get destinationStopName => _destinationStopName;
-  TransportService get transportService => _transportService;
+  double get bearing => _bearing;
+  double get bearingRadians => _bearingRadians;
+  StopDeparture get stopDeparture => _stopDeparture;
 
   ServiceLocation.fromMap(dynamic obj) {
     this._direction  = obj["Direction"];
@@ -27,6 +32,8 @@ class ServiceLocation {
     this._delayInS  = obj["DelaySeconds"];
     this._vehicleRef = obj["VehicleRef"];
     this._destinationStopName = obj["DestinationStopName"];
-    this._transportService = TransportService.fromMap(obj["Service"]);
+    this._bearing = double.parse(obj["Bearing"]);
+    this._bearingRadians =  this._bearing * pi / 180; // Deg × π/180 = Radians
+    this._stopDeparture = StopDeparture.fromMap(obj["Service"]);
   }
 }

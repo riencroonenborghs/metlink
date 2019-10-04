@@ -30,9 +30,10 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   Marker _createMarker() {
     serviceLocations.forEach((serviceLocation){
       if(serviceLocation.vehicleRef == widget.serviceLocation.vehicleRef) {
+        print("bearing ${serviceLocation.bearing} -> ${serviceLocation.bearingRadians}");
         marker = Marker(
-          width: 80.0,
-          height: 80.0,
+          width: 45.0,
+          height: 45.0,
           point: LatLng(serviceLocation.lat, serviceLocation.long),
           builder: (ctx) => Container(
             child: GestureDetector(
@@ -46,7 +47,12 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
                   content: Text(text),
                 ));
               },
-              child: Icon(Icons.location_on),
+              child: Container(
+                child: Transform.rotate(
+                  angle: serviceLocation.bearingRadians,
+                  child: Image.asset("assets/images/bus-primary.png")
+                )
+              )
             )
           )
         );
@@ -135,7 +141,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
 
   _reload() {
     print("loading ${DateTime.now()}");
-    serviceLocationBloc.dispatch(ServiceLocationPerformEvent(code: widget.serviceLocation.transportService.code));
+    serviceLocationBloc.dispatch(ServiceLocationPerformEvent(code: widget.serviceLocation.stopDeparture.code));
   }
 
   @override

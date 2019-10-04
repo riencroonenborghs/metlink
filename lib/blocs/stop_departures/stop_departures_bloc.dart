@@ -17,8 +17,8 @@ class StopDeparturesBloc extends Bloc<StopDeparturesEvent, StopDeparturesState> 
     if(event is StopDeparturesPerformEvent) {
       yield StopDeparturesSearchingState();
       try {
-        List<TransportService> transportServices = await stopDeparturesService.search(event.stop);        
-        yield StopDeparturesDoneState(transportServices: transportServices);
+        List<StopDeparture> stopDepartures = await stopDeparturesService.search(event.stop);        
+        yield StopDeparturesDoneState(stopDepartures: stopDepartures);
       } catch (_) {
         yield StopDeparturesErrorState();
       }

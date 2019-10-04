@@ -1,4 +1,4 @@
-class TransportService {
+class StopDeparture {
   String _code;
   String _name;
   String _link;
@@ -7,7 +7,7 @@ class TransportService {
   String get name => _name;
   String get link => _link;
 
-  TransportService.fromMap(dynamic obj) {
+  StopDeparture.fromMap(dynamic obj) {
     this._code  = obj["Code"];
     this._name  = obj["Name"];
     this._link  = obj["Link"];

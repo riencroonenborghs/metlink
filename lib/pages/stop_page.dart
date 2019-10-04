@@ -20,27 +20,27 @@ class _StopPageState extends State<StopPage> with UtilsWidget {
   BuildContext buildContext;
   StopDeparturesBloc stopDeparturesBloc = new StopDeparturesBloc();
 
-  Widget _searchList(List<TransportService> transportServices) {
+  Widget _searchList(List<StopDeparture> stopDepartures) {
     List<Widget> cards = new List<Widget>();
 
-    Map<String, TransportService> services = new Map<String, TransportService>();
-    transportServices.forEach((transportService) {
-      if(!services.keys.contains(transportService.code)) {
-        services[transportService.code] = transportService;
+    Map<String, StopDeparture> services = new Map<String, StopDeparture>();
+    stopDepartures.forEach((stopDeparture) {
+      if(!services.keys.contains(stopDeparture.code)) {
+        services[stopDeparture.code] = stopDeparture;
       }
     });
 
     services.entries.forEach((entry) {
       String code = entry.key;
-      TransportService transportService = entry.value;
+      StopDeparture stopDeparture = entry.value;
       Card card = Card(
         child: ListTile(
-          title: Text("${transportService.code} - ${transportService.name}"),
+          title: Text("${stopDeparture.code} - ${stopDeparture.name}"),
           trailing: Icon(Icons.chevron_right),
           onTap: () {
             Navigator.push(
               buildContext,
-              MaterialPageRoute(builder: (BuildContext buildContext) => LocationPage(transportService: transportService))
+              MaterialPageRoute(builder: (BuildContext buildContext) => LocationPage(stopDeparture: stopDeparture))
             );
           }
         ),
@@ -72,13 +72,13 @@ class _StopPageState extends State<StopPage> with UtilsWidget {
           return errorMessage("Something went wrong :(");
         }
         if(stopDeparturesState is StopDeparturesDoneState) {
-          if(stopDeparturesState.transportServices.length == 0) {
+          if(stopDeparturesState.stopDepartures.length == 0) {
             return Padding(
               padding: EdgeInsets.only(top: 8.0),
               child: leftAlignText("Nothing found")
             );
           } else {
-            return _searchList(stopDeparturesState.transportServices);
+            return _searchList(stopDeparturesState.stopDepartures);
           }
         }
       }
