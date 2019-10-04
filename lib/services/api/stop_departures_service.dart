@@ -16,6 +16,7 @@ class StopDeparturesService {
       body["Services"].forEach((data) {
         stopDepartures.add(StopDeparture.fromMap(data["Service"]));
       });
+      stopDepartures.sort((x,y) { return  x.code.compareTo(y.code); });
       return stopDepartures;
     });
   }

@@ -16,6 +16,7 @@ class StopSearchService {
       body.forEach((data) {
         stops.add(Stop.fromMap(data));
       });
+      stops.sort((x,y) { return  x.code.compareTo(y.code); });
       return stops;
     });
   }
