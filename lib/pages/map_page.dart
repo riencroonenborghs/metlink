@@ -38,11 +38,11 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
           builder: (ctx) => Container(
             child: GestureDetector(
               onTap: () {
-                String text = "Is on time.";
+                String text = "Bus ${widget.serviceLocation.vehicleRef} is on time (lol)";
                 if(serviceLocation.isBehind) {
-                  text = "Delayed by ${(serviceLocation.delayInS / 60).ceil()} minutes.";
+                  text = "Bus ${widget.serviceLocation.vehicleRef} is delayed by ${(serviceLocation.delayInS / 60).ceil()} minutes (pffft)";
                 }
-                text += " On its way to ${serviceLocation.destinationStopName}.";
+                text += " and on its way to ${serviceLocation.destinationStopName}.";
                 _scaffoldKey.currentState.showSnackBar(SnackBar(
                   content: Text(text),
                 ));
@@ -170,7 +170,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text("Vehicle ${widget.serviceLocation.vehicleRef}")
+        title: Text("Metlink: Is my bus going show up?")
       ),
       body: Padding(
         padding: EdgeInsets.all(8.0),
