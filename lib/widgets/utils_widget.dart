@@ -20,6 +20,20 @@ class UtilsWidget {
     );
   }
 
+  Widget centerWaiting(BuildContext context, String text) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            waiting(context, "Locating where you are...")
+          ]
+        )
+      ]
+    );
+  }
+
   Widget errorMessage(String message) {
     return Text(
       message,

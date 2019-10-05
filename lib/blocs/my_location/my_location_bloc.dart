@@ -14,21 +14,24 @@ class MyLocationBloc extends Bloc<MyLocationEvent, MyLocationState> {
 
   @override
   Stream<MyLocationState> mapEventToState(MyLocationEvent event) async* {
-    print("--1");
     if(event is MyLocationPerformEvent) {
-      print("--2");
       yield MyLocationSearchingState();
-      print("--3");
       try {
-        print("--4");
         Position position = await Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high);
-        print("--5");
-        print(position);
+        // -41.2845402,174.7242675
+        position = Position(
+          latitude: -41.2845402,
+          longitude: 174.7242675,
+          timestamp: null,
+          mocked: null,
+          accuracy: null,
+          altitude: null,
+          heading: null,
+          speed: null,
+          speedAccuracy: null
+        );
         yield MyLocationFoundState(myPosition: position);
-        print("--6");
-      } catch (e) {
-        print("--7");
-        print(e);
+      } catch (_) {
         yield MyLocationErrorState();
       }
     }
