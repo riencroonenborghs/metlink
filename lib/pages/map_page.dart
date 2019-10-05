@@ -170,7 +170,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text("Metlink: Is my bus going show up?")
+        title: Text("Metlink: Is my bus going to show up?")
       ),
       body: Padding(
         padding: EdgeInsets.all(8.0),

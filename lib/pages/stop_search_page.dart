@@ -81,7 +81,7 @@ class _StopSearchPageState extends State<StopSearchPage> with UtilsWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Metlink: Is my bus going show up?")
+        title: Text("Metlink: Is my bus going to show up?")
       ),
       body: Padding(
         padding: EdgeInsets.all(8.0),
