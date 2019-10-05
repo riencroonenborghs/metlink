@@ -40,7 +40,7 @@ class _StopPageState extends State<StopPage> with UtilsWidget {
           onTap: () {
             Navigator.push(
               buildContext,
-              MaterialPageRoute(builder: (BuildContext buildContext) => LocationPage(stopDeparture: stopDeparture))
+              MaterialPageRoute(builder: (BuildContext buildContext) => LocationPage(stop: widget.stop, stopDeparture: stopDeparture))
             );
           }
         ),
@@ -93,14 +93,14 @@ class _StopPageState extends State<StopPage> with UtilsWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Stop ${widget.stop.code}")
+        title: Text("Metlink: Is my bus going show up?")
       ),
       body: Padding(
         padding: EdgeInsets.all(8.0),
         child: Column(
           children: [
-            leftAlignText(widget.stop.name),
-            leftAlignText("Services for this stop:"),
+            leftAlignText("Stop ${widget.stop.name}"),
+            leftAlignText("\"Available\" services for this stop:"),
             _searchResults()
           ]
         )

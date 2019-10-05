@@ -81,12 +81,13 @@ class _StopSearchPageState extends State<StopSearchPage> with UtilsWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Stop Search")
+        title: Text("Metlink: Is my bus going show up?")
       ),
       body: Padding(
         padding: EdgeInsets.all(8.0),
         child: Column(
           children: [
+            leftAlignText("Where do you want to look for a bus?"),
             TextField(
               decoration: InputDecoration(
                 labelText: "Street name, stop number or station"

@@ -8,9 +8,10 @@ import "package:metlink/pages/pages.dart";
 import "package:metlink/models/models.dart";
 
 class LocationPage extends StatefulWidget {
+  final Stop stop;
   final StopDeparture stopDeparture;
 
-  LocationPage({Key key, @required this.stopDeparture}) : super(key: key);
+  LocationPage({Key key, @required this.stop, @required this.stopDeparture}) : super(key: key);
 
   @override
   _LocationPageState createState() => _LocationPageState();
@@ -125,14 +126,15 @@ class _LocationPageState extends State<LocationPage> with UtilsWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Service ${widget.stopDeparture.code}")
+        title: Text("Metlink: Is my bus going show up?")
       ),
       body: Padding(
         padding: EdgeInsets.all(8.0),
         child: Column(
           children: [
-            leftAlignText(widget.stopDeparture.name),
-            leftAlignText("Vehicles on the road:"),
+            leftAlignText("Stop ${widget.stop.name}"),
+            leftAlignText("Service ${widget.stopDeparture.code} - ${widget.stopDeparture.name}"),
+            leftAlignText("Vehicles that claim to be on the road:"),
             _searchResults()
           ]
         )
