@@ -9,3 +9,7 @@ export "package:metlink/blocs/stop_departures/stop_departures_bloc.dart";
 export "package:metlink/blocs/service_location/service_location_event.dart";
 export "package:metlink/blocs/service_location/service_location_state.dart";
 export "package:metlink/blocs/service_location/service_location_bloc.dart";
+
+export "package:metlink/blocs/my_location/my_location_event.dart";
+export "package:metlink/blocs/my_location/my_location_state.dart";
+export "package:metlink/blocs/my_location/my_location_bloc.dart";

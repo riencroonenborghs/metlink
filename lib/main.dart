@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
         primaryColor: Color.fromRGBO(0, 109, 178, 1),
         accentColor: Color.fromRGBO(196, 219, 12, 1)
       ),
-      home: StopSearchPage()
+      home: MapPage()
     );
   }
 }
