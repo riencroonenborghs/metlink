@@ -79,20 +79,18 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     List<Placemark> placemarks = await Geolocator().placemarkFromCoordinates(latLng.latitude, latLng.longitude);
     Placemark placemark = placemarks[0];
     if(placemark == null) return;
-    _findStopsForAddress(placemark.thoroughfare);
-  }
 
-  _findStopsForAddress(String address) async {
     stopMarkers = new List<Marker>();
-    stopSearchService.search(address).then((List<Stop> stops) {
-      stops.forEach((Stop foundStop) {
-        stopService.search(foundStop.code).then((Stop stop) {
-          // setState(() {
-            print("--- ${foundStop.code} -> ${stop.lat}/${stop.long}");
-            stopMarkers.add(_createStopMarker(stop));
-          // });
+    stopSearchService.search(placemark.thoroughfare).then((List<Stop> stops) {
+
+      stops.asMap().forEach((index, Stop foundStop) {
+        Timer(Duration(milliseconds: (index + 1) * 750), () {
+          stopService.search(foundStop.code).then((Stop stop) {
+            setState(() {
+              stopMarkers.add(_createStopMarker(stop));
+            });
+          });
         });
-        sleep(Duration(milliseconds: 750));
       });
     });
   }
