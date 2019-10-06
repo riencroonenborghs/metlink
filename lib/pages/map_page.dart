@@ -25,6 +25,10 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> with UtilsWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  MapController mapController;
+  double defaultZoom = 15.0;
+  num trackUpdateDelay = 2;
+  bool moveMap = false;
 
   StopSearchService stopSearchService = new StopSearchService();
   StopService stopService = new StopService();
@@ -75,6 +79,12 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
       LatLng latLng = LatLng(position.latitude, position.longitude);
       _createMyLocationMarker(latLng);
       _findStopsNearby(latLng);
+      if(mapController != null) { 
+        mapController.move(
+          latLng,
+          defaultZoom
+        );
+      }
     }); 
   }
 
@@ -155,9 +165,10 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
 
     return Flexible(
       child: FlutterMap(
+        mapController: mapController,
         options: MapOptions(
           center: centerOn,
-          zoom: 15.0,
+          zoom: defaultZoom,
           onTap: (LatLng latLng) {
             if(_stopInfoBottomSheet != null) { _stopInfoBottomSheet.close(); }
           },
@@ -180,7 +191,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
 
   _trackBus(StopDeparture stopDeparture) {
     _loadTrackedBus(stopDeparture);
-    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    timer = Timer.periodic(Duration(seconds: trackUpdateDelay), (timer) {
       _loadTrackedBus(stopDeparture);
     });
   }
@@ -202,7 +213,15 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     serviceLocationService.forStopDeparture(stopDeparture).then((ServiceLocation serviceLocation) {
       if(serviceLocation == null) return;
       setState(() {
+        print("_loadTrackedBus ${DateTime.now()}: ${serviceLocation.lat}/${serviceLocation.long}");
         _createBusMarker(serviceLocation);
+        if(moveMap) {
+          mapController.move(
+            trackedBusMarker.point,
+            defaultZoom
+          );
+          moveMap = false;
+        }
       });
     });
   }
@@ -235,6 +254,8 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
         trailing: Icon(Icons.chevron_right),
         onTap: () {
           if(_stopInfoBottomSheet != null) { _stopInfoBottomSheet.close(); }
+
+          moveMap = true;          
           _trackBus(stopDeparture);
           setState(() {
             _resetNearbyStops();
@@ -303,11 +324,13 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   void dispose() {
     if(timer != null ) { timer.cancel(); }
     super.dispose();
+
   }
 
   @override
   void initState() {
     super.initState();
+    mapController = MapController();
     _findMyLocation();
   }
 
