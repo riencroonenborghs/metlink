@@ -120,14 +120,6 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
           onTap: () {
           },
           child: Icon(Icons.location_on)
-          // child: Container(
-          //   child: Transform.rotate(
-          //     angle: serviceLocation.bearingRadians,
-          //     child: serviceLocation.bearing < 180 ? 
-          //       Image.asset("assets/images/bus-primary-going-east.png") :
-          //       Image.asset("assets/images/bus-primary-going-west.png")
-          //   )
-          // )
         )
       )
     );
@@ -172,6 +164,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
           onLongPress: (LatLng latLng) {
             _createMyLocationMarker(latLng);
             _findStopsNearby(latLng);
+            _resetTrackedBus();
           }
         ),
         layers: [
@@ -190,6 +183,19 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
       _loadTrackedBus(stopDeparture);
     });
+  }
+
+  _resetTrackedBus() {
+    trackedBusMarker = null;
+    if(timer != null) timer.cancel();
+  }
+
+  _resetMyLocation() {
+    myLocationMarker = null;
+  }
+
+  _resetNearbyStops() {
+    stopMarkers = null;
   }
 
   _loadTrackedBus(StopDeparture stopDeparture) {
@@ -228,7 +234,11 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
         subtitle: Column(children: subtitles),
         trailing: Icon(Icons.chevron_right),
         onTap: () {
+          if(_stopInfoBottomSheet != null) { _stopInfoBottomSheet.close(); }
           _trackBus(stopDeparture);
+          setState(() {
+            _resetNearbyStops();
+          });
         }
       );
       departures.add(tile);
