@@ -260,7 +260,17 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
 
   _loadTrackedBus(StopDeparture stopDeparture) {
     serviceLocationService.forStopDeparture(stopDeparture).then((ServiceLocation serviceLocation) {
-      if(serviceLocation == null) return;
+      if(serviceLocation == null) {
+        _resetTrackedBus();
+        _findStopsNearby(_myLocationMarker.point);
+        _scaffoldKey.currentState.showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.white,
+            content: errorMessage("Cound not find your bus.")
+          )
+        );
+        return;
+      }
       setState(() {
         print("_loadTrackedBus ${DateTime.now()}: ${serviceLocation.lat}/${serviceLocation.long}");
         _createBusMarker(serviceLocation);

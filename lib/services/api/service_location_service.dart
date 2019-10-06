@@ -28,7 +28,8 @@ class ServiceLocationService {
       body["Services"].forEach((data) {
         serviceLocations.add(ServiceLocation.fromMap(data));
       });
-      return serviceLocations.where((item) { return item.vehicleRef == stopDeparture.vehicleRef; }).first;
+      var foundServiceLocations = serviceLocations.where((item) { return item.vehicleRef == stopDeparture.vehicleRef; });
+      return foundServiceLocations.isEmpty ? null : foundServiceLocations.first;
     });
   }
 }
