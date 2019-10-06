@@ -13,11 +13,12 @@ class StopDeparturesService {
     return new NetworkService().get(url).then((dynamic res) {
       var body = json.decode(res.body);
       List<StopDeparture> stopDepartures = List<StopDeparture>();
-      print(body);
-      body["Services"].forEach((data) {
-        stopDepartures.add(StopDeparture.fromMap(data["Service"]));
-      });
-      stopDepartures.sort((x,y) { return  x.code.compareTo(y.code); });
+      if(body["Services"] != null) {
+        body["Services"].forEach((data) {
+          stopDepartures.add(StopDeparture.fromMap(data));
+        });
+        stopDepartures.sort((x,y) { return  x.code.compareTo(y.code); });
+      }
       return stopDepartures;
     });
   }

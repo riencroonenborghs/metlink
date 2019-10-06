@@ -1,5 +1,6 @@
 import "dart:async";
 import "dart:io";
+import "package:intl/intl.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
 import "package:flutter_map/flutter_map.dart";
@@ -35,7 +36,8 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   PersistentBottomSheetController _stopInfoBottomSheet;
 
   List<Marker> stopMarkers;
-  Map<String, StopDeparture> stopDepartures;
+  // Map<String, StopDeparture> stopDepartures;
+  List<StopDeparture> stopDepartures;
   bool _fakeRebuild = false;
   Stop _clickedStop;
 
@@ -88,12 +90,12 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
           onTap: () {
             _clickedStop = stop;
             stopDeparturesService.search(stop).then((List<StopDeparture> foundStopDepartures) {
-              stopDepartures = new Map<String, StopDeparture>();
-              foundStopDepartures.forEach((stopDeparture) {
-                if(!stopDepartures.keys.contains(stopDeparture.code)) {
-                  stopDepartures[stopDeparture.code] = stopDeparture;
-                }
-              });
+              stopDepartures = foundStopDepartures;
+              // foundStopDepartures.forEach((stopDeparture) {
+              //   if(!stopDepartures.keys.contains(stopDeparture.code)) {
+              //     stopDepartures[stopDeparture.code] = stopDeparture;
+              //   }
+              // });
               _stopInfo();
             });
           },
@@ -140,9 +142,11 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
       child: FlutterMap(
         options: MapOptions(
           center: centerOn,
-          zoom: 15.0,
+          zoom: 16.0,
           onTap: (LatLng latLng) {
             if(_stopInfoBottomSheet != null) { _stopInfoBottomSheet.close(); }
+          },
+          onLongPress: (LatLng latLng) {
             _createMyLocationMarker(latLng);
             _findStopsNearby(latLng);
           }
@@ -175,11 +179,14 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     );
 
     List<Widget> departures = new List<Widget>();
-    stopDepartures.entries.forEach((entry) {
-      String code = entry.key;
-      StopDeparture stopDeparture = entry.value;
+    stopDepartures.forEach((stopDeparture) {
+      List<Widget> subtitles = new List<Widget>();
+      if(stopDeparture.departureStatus != null) { subtitles.add(leftAlignText(stopDeparture.departureStatus)); }
+      subtitles.add(leftAlignText("Due: ${DateFormat.jm().format(stopDeparture.aimedArrival)}"));
+
       ListTile tile = ListTile(
         title: Text("${stopDeparture.code} - ${stopDeparture.name}"),
+        subtitle: Column(children: subtitles),
         trailing: Icon(Icons.chevron_right),
         onTap: () {
           

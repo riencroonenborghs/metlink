@@ -28,6 +28,8 @@ dependencies:
   equatable: ^0.2.6
   flutter_map: any
   geolocator: ^5.1.4
+  intl: ^0.16.0
+
 
 dev_dependencies:
   flutter_test:
