@@ -27,6 +27,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   static double DEFAULT_ZOOM = 15.0;
   static num TRACK_UPDATE_DELAY = 2;
+  static String TITLE = "Metlink Bus Tracker";
   MapController mapController;
   bool _moveMap = false;
 
@@ -40,6 +41,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   Marker _myLocationMarker;
   Marker _trackedBusMarker;
   PersistentBottomSheetController _stopInfoBottomSheet;
+  PersistentBottomSheetController _busInfoBottomSheet;
 
   List<Marker> _stopMarkers;
   List<StopDeparture> _stopDepartures;
@@ -134,7 +136,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
       builder: (ctx) => Container(
         child: GestureDetector(
           onTap: () {
-
+            _showBusInfoBottomSheet(serviceLocation);
           },
           child: Container(
             child: Transform.rotate(
@@ -147,6 +149,31 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
         )
       )
     );
+  }
+
+  _showBusInfoBottomSheet(ServiceLocation serviceLocation) {
+    _busInfoBottomSheet = _scaffoldKey.currentState.showBottomSheet((context) => Container(
+      color: Colors.white,
+      height: 150,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  _bottomSheetTitle("Vehicle ${serviceLocation.vehicleRef}"),
+                  leftAlignText("${serviceLocation.code} - ${serviceLocation.name}"),
+                  leftAlignText(serviceLocation.isBehind ? "Delayed by ${serviceLocation.delayInM} minutes." : "On Time.")
+                ]
+              )
+            )
+          )
+        ]
+      )
+    ));
   }
 
   Widget _showMap() {
@@ -164,7 +191,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
           center: centerOn,
           zoom: DEFAULT_ZOOM,
           onTap: (LatLng latLng) {
-            if(_stopInfoBottomSheet != null) { _stopInfoBottomSheet.close(); }
+            _closeBottomSheets();
           },
           onLongPress: (LatLng latLng) {
             _createMyLocationMarker(latLng);
@@ -203,6 +230,34 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     _stopMarkers = null;
   }
 
+  _closeBottomSheets() {
+    if(_stopInfoBottomSheet != null) { 
+      _stopInfoBottomSheet.close();
+      _stopInfoBottomSheet = null;
+    }
+    if(_busInfoBottomSheet != null) {
+      _busInfoBottomSheet.close();
+      _busInfoBottomSheet = null;
+    }
+  }
+
+  Widget _bottomSheetTitle(String title) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Text(title)
+        ),
+        IconButton(
+          icon: Icon(Icons.close),
+          onPressed: () {
+            _closeBottomSheets();
+          }
+        )
+      ]
+    );
+  }
+
   _loadTrackedBus(StopDeparture stopDeparture) {
     serviceLocationService.forStopDeparture(stopDeparture).then((ServiceLocation serviceLocation) {
       if(serviceLocation == null) return;
@@ -221,34 +276,21 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   }
 
   Widget _stopInfo() {
-    Row title = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Flexible(
-          child: Text("Stop ${_clickedStop.code} - ${_clickedStop.name}")
-        ),
-        IconButton(
-          icon: Icon(Icons.close),
-          onPressed: () {
-            _stopInfoBottomSheet.close();
-          }
-        )
-      ]
-    );
+    Row title = _bottomSheetTitle("Stop ${_clickedStop.code} - ${_clickedStop.name}");
 
     List<Widget> departures = new List<Widget>();
     _stopDepartures.forEach((stopDeparture) {
-      List<Widget> subtitles = new List<Widget>();
-      if(stopDeparture.departureStatus != null) { subtitles.add(leftAlignText(stopDeparture.departureStatus)); }
-      subtitles.add(leftAlignText("Due: ${DateFormat.jm().format(stopDeparture.aimedArrival)}"));
+      String subtitle = "Due: ${DateFormat.jm().format(stopDeparture.aimedArrival)}";
+      if(stopDeparture.departureStatus != null) {
+        if(stopDeparture.departureStatus == "delayed") { subtitle += " Delayed."; }
+      }
 
       ListTile tile = ListTile(
         title: Text("${stopDeparture.code} - ${stopDeparture.name}"),
-        subtitle: Column(children: subtitles),
-        trailing: Icon(Icons.chevron_right),
+        subtitle: Text(subtitle),
+        trailing: Icon(Icons.location_on, color: Theme.of(context).accentColor),
         onTap: () {
-          if(_stopInfoBottomSheet != null) { _stopInfoBottomSheet.close(); }
-
+          _closeBottomSheets();
           _moveMap = true;       
           _trackBus(stopDeparture);
           setState(() {
@@ -291,15 +333,19 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     if(_myLocationMarker == null) {
       return centerWaiting(buildContext, "Locating where you are...");
     } else {
-      List<Widget> children = new List<Widget>();
-      children.add(
+      List<Widget> stackChildren = new List<Widget>();
+      stackChildren.add(
         Column(
           children: [        
             _showMap()
           ]
         )
       );
-      children.add(
+
+      List<Widget> iconChildren = new List<Widget>();
+      stackChildren.add(Row(children: iconChildren));
+
+      iconChildren.add(
         IconButton(
           icon: Icon(Icons.location_searching),
           onPressed: () {
@@ -307,11 +353,46 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
           }
         )
       );
+      if(_trackedBusMarker != null) {
+        iconChildren.add(
+          IconButton(
+            icon: Icon(Icons.location_off, color: Theme.of(context).primaryColor),
+            onPressed: () {
+              _resetTrackedBus();
+              _findStopsNearby(_myLocationMarker.point);
+            }
+          )
+        );
+      }
 
       return Stack(
-        children: children
+        children: stackChildren
       );
     }
+  }
+
+  Widget _drawer() {
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        DrawerHeader(
+          child: Text(TITLE),
+          decoration: BoxDecoration(
+            color: Theme.of(context).primaryColor
+          ),
+        ),
+        ListTile(
+          title: Text('Item 1'),
+          onTap: () {
+          }
+        ),
+        ListTile(
+          title: Text('Item 2'),
+          onTap: () {
+          }
+        )
+      ]
+    );
   }
 
   @override
@@ -335,9 +416,12 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     return Scaffold(
       key: _scaffoldKey,
       appBar: AppBar(
-        title: Text("Metlink Bus Tracker")
+        title: Text(TITLE)
       ),
-      body: _render()
+      body: _render(),
+      drawer: Drawer(
+        child: _drawer()
+      )
     );
   }
 }
