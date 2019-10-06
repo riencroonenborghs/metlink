@@ -27,7 +27,7 @@ class UtilsWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            waiting(context, "Locating where you are...")
+            waiting(context, text)
           ]
         )
       ]

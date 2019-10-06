@@ -27,12 +27,56 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
 
   StopSearchService stopSearchService = new StopSearchService();
   StopService stopService = new StopService();
+  StopDeparturesService stopDeparturesService = new StopDeparturesService();
+  StopsNearbyService stopsNearbyService = new StopsNearbyService();
   
   BuildContext buildContext;  
   Marker myLocationMarker;
-  List<Marker> stopMarkers;
+  PersistentBottomSheetController _stopInfoBottomSheet;
 
-  // Timer timer;
+  List<Marker> stopMarkers;
+  Map<String, StopDeparture> stopDepartures;
+  bool _fakeRebuild = false;
+  Stop _clickedStop;
+
+  // --------------------
+  // Find things
+  // --------------------
+
+  _findStopsNearby(LatLng latLng) async {
+    stopMarkers = new List<Marker>();
+    stopsNearbyService.search(latLng).then((List<Stop> foundStops) {
+      foundStops.forEach((Stop stop) {
+        stopMarkers.add(_createStopMarker(stop));
+      });
+      setState(() { _fakeRebuild = true; });
+    });
+  }
+   
+  _findMyLocation() {
+    Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high).then((Position position) {
+      // -41.2845402,174.7242675
+      position = Position(
+        latitude: -41.2845402,
+        longitude: 174.7242675,
+        timestamp: null,
+        mocked: null,
+        accuracy: null,
+        altitude: null,
+        heading: null,
+        speed: null,
+        speedAccuracy: null
+      );
+
+      LatLng latLng = LatLng(position.latitude, position.longitude);
+      _createMyLocationMarker(latLng);
+      _findStopsNearby(latLng);
+    }); 
+  }
+
+  // --------------------
+  // Create widgets
+  // --------------------
 
   Marker _createStopMarker(Stop stop) {
     return Marker(
@@ -42,6 +86,16 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
       builder: (ctx) => Container(
         child: GestureDetector(
           onTap: () {
+            _clickedStop = stop;
+            stopDeparturesService.search(stop).then((List<StopDeparture> foundStopDepartures) {
+              stopDepartures = new Map<String, StopDeparture>();
+              foundStopDepartures.forEach((stopDeparture) {
+                if(!stopDepartures.keys.contains(stopDeparture.code)) {
+                  stopDepartures[stopDeparture.code] = stopDeparture;
+                }
+              });
+              _stopInfo();
+            });
           },
           child: Icon(
             Icons.location_on,
@@ -75,26 +129,6 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     );
   }
 
-  _findAddress(LatLng latLng) async {
-    List<Placemark> placemarks = await Geolocator().placemarkFromCoordinates(latLng.latitude, latLng.longitude);
-    Placemark placemark = placemarks[0];
-    if(placemark == null) return;
-
-    stopMarkers = new List<Marker>();
-    stopSearchService.search(placemark.thoroughfare).then((List<Stop> stops) {
-
-      stops.asMap().forEach((index, Stop foundStop) {
-        Timer(Duration(milliseconds: (index + 1) * 750), () {
-          stopService.search(foundStop.code).then((Stop stop) {
-            setState(() {
-              stopMarkers.add(_createStopMarker(stop));
-            });
-          });
-        });
-      });
-    });
-  }
-
   Widget _showMap() {
     LatLng centerOn = myLocationMarker == null ? beehiveMarker.point : myLocationMarker.point;
     Marker marker = myLocationMarker == null ? beehiveMarker : myLocationMarker;
@@ -108,10 +142,9 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
           center: centerOn,
           zoom: 15.0,
           onTap: (LatLng latLng) {
+            if(_stopInfoBottomSheet != null) { _stopInfoBottomSheet.close(); }
             _createMyLocationMarker(latLng);
-            _findAddress(latLng);
-
-            setState(() { _findingMyLocation = false; });
+            _findStopsNearby(latLng);
           }
         ),
         layers: [
@@ -125,24 +158,87 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     );
   }
 
-  Widget _showMyLocation() {
+  Widget _stopInfo() {
+    Row title = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Text("Stop ${_clickedStop.code} - ${_clickedStop.name}")
+        ),
+        IconButton(
+          icon: Icon(Icons.close),
+          onPressed: () {
+            _stopInfoBottomSheet.close();
+          }
+        )
+      ]
+    );
+
+    List<Widget> departures = new List<Widget>();
+    stopDepartures.entries.forEach((entry) {
+      String code = entry.key;
+      StopDeparture stopDeparture = entry.value;
+      ListTile tile = ListTile(
+        title: Text("${stopDeparture.code} - ${stopDeparture.name}"),
+        trailing: Icon(Icons.chevron_right),
+        onTap: () {
+          
+        }
+      );
+      departures.add(tile);
+    });
+
+    _stopInfoBottomSheet = _scaffoldKey.currentState.showBottomSheet((context) => Container(
+      color: Colors.white,
+      height: 350,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  title,
+                  Expanded(
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: departures
+                    )
+                  )
+                ]
+              )
+            )
+          )
+        ]
+      )
+    ));
+  }
+
+  Widget _render() {
     if(myLocationMarker == null) {
       return centerWaiting(buildContext, "Locating where you are...");
     } else {
+      List<Widget> children = new List<Widget>();
+      children.add(
+        Column(
+          children: [        
+            _showMap()
+          ]
+        )
+      );
+      children.add(
+        IconButton(
+          icon: Icon(Icons.location_searching),
+          onPressed: () {
+            _findMyLocation();
+          }
+        )
+      );
+
       return Stack(
-        children: [
-          Column(
-            children: [        
-              _showMap()
-            ]
-          ),
-          IconButton(
-            icon: Icon(Icons.location_searching),
-            onPressed: () {
-              _findMyLocation();
-            }
-          )
-        ]
+        children: children
       );
     }
   }
@@ -152,30 +248,6 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   //   if(timer != null ) { timer.cancel(); }
   //   super.dispose();
   // }
-
-  bool _findingMyLocation = false;
-  _findMyLocation() {
-    Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high).then((Position position) {
-      // -41.2845402,174.7242675
-      position = Position(
-        latitude: -41.2845402,
-        longitude: 174.7242675,
-        timestamp: null,
-        mocked: null,
-        accuracy: null,
-        altitude: null,
-        heading: null,
-        speed: null,
-        speedAccuracy: null
-      );
-
-      LatLng latLng = LatLng(position.latitude, position.longitude);
-      _createMyLocationMarker(latLng);
-      _findAddress(latLng);
-
-      setState(() { _findingMyLocation = false; });
-    }); 
-  }
 
   @override
   void initState() {
@@ -196,7 +268,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
       appBar: AppBar(
         title: Text("Metlink Bus Tracker")
       ),
-      body: _showMyLocation()
+      body: _render()
     );
   }
 }
