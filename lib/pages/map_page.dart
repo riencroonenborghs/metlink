@@ -64,17 +64,17 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   _findMyLocation() {
     Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high).then((Position position) {
       // -41.2845402,174.7242675
-      position = Position(
-        latitude: -41.2845402,
-        longitude: 174.7242675,
-        timestamp: null,
-        mocked: null,
-        accuracy: null,
-        altitude: null,
-        heading: null,
-        speed: null,
-        speedAccuracy: null
-      );
+      // position = Position(
+      //   latitude: -41.2845402,
+      //   longitude: 174.7242675,
+      //   timestamp: null,
+      //   mocked: null,
+      //   accuracy: null,
+      //   altitude: null,
+      //   heading: null,
+      //   speed: null,
+      //   speedAccuracy: null
+      // );
 
       LatLng latLng = LatLng(position.latitude, position.longitude);
       _createMyLocationMarker(latLng);
