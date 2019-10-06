@@ -25,10 +25,10 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> with UtilsWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  static double DEFAULT_ZOOM = 15.0;
+  static num TRACK_UPDATE_DELAY = 2;
   MapController mapController;
-  double defaultZoom = 15.0;
-  num trackUpdateDelay = 2;
-  bool moveMap = false;
+  bool _moveMap = false;
 
   StopSearchService stopSearchService = new StopSearchService();
   StopService stopService = new StopService();
@@ -37,25 +37,25 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   ServiceLocationService serviceLocationService = new ServiceLocationService();
   
   BuildContext buildContext;  
-  Marker myLocationMarker;
-  Marker trackedBusMarker;
+  Marker _myLocationMarker;
+  Marker _trackedBusMarker;
   PersistentBottomSheetController _stopInfoBottomSheet;
 
-  List<Marker> stopMarkers;
-  List<StopDeparture> stopDepartures;
+  List<Marker> _stopMarkers;
+  List<StopDeparture> _stopDepartures;
   bool _fakeRebuild = false;
   Stop _clickedStop;
-  Timer timer;
+  Timer _timer;
 
   // --------------------
   // Find things
   // --------------------
 
   _findStopsNearby(LatLng latLng) async {
-    stopMarkers = new List<Marker>();
+    _stopMarkers = new List<Marker>();
     stopsNearbyService.search(latLng).then((List<Stop> foundStops) {
       foundStops.forEach((Stop stop) {
-        stopMarkers.add(_createStopMarker(stop));
+        _stopMarkers.add(_createStopMarker(stop));
       });
       setState(() { _fakeRebuild = true; });
     });
@@ -64,17 +64,17 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   _findMyLocation() {
     Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high).then((Position position) {
       // -41.2845402,174.7242675
-      // position = Position(
-      //   latitude: -41.2845402,
-      //   longitude: 174.7242675,
-      //   timestamp: null,
-      //   mocked: null,
-      //   accuracy: null,
-      //   altitude: null,
-      //   heading: null,
-      //   speed: null,
-      //   speedAccuracy: null
-      // );
+      position = Position(
+        latitude: -41.2845402,
+        longitude: 174.7242675,
+        timestamp: null,
+        mocked: null,
+        accuracy: null,
+        altitude: null,
+        heading: null,
+        speed: null,
+        speedAccuracy: null
+      );
 
       LatLng latLng = LatLng(position.latitude, position.longitude);
       _createMyLocationMarker(latLng);
@@ -82,7 +82,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
       if(mapController != null) { 
         mapController.move(
           latLng,
-          defaultZoom
+          DEFAULT_ZOOM
         );
       }
     }); 
@@ -102,12 +102,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
           onTap: () {
             _clickedStop = stop;
             stopDeparturesService.search(stop).then((List<StopDeparture> foundStopDepartures) {
-              stopDepartures = foundStopDepartures;
-              // foundStopDepartures.forEach((stopDeparture) {
-              //   if(!stopDepartures.keys.contains(stopDeparture.code)) {
-              //     stopDepartures[stopDeparture.code] = stopDeparture;
-              //   }
-              // });
+              _stopDepartures = foundStopDepartures;
               _stopInfo();
             });
           },
@@ -121,27 +116,26 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   }
 
   Marker _createMyLocationMarker(LatLng latLng) {
-    myLocationMarker = Marker(
+    _myLocationMarker = Marker(
       width: 45.0,
       height: 45.0,
       point: latLng,
       builder: (ctx) => Container(
-        child: GestureDetector(
-          onTap: () {
-          },
-          child: Icon(Icons.location_on)
-        )
+        child: Icon(Icons.location_on)
       )
     );
   }
 
   Marker _createBusMarker(ServiceLocation serviceLocation) {
-    trackedBusMarker = Marker(
+    _trackedBusMarker = Marker(
       width: 45.0,
       height: 45.0,
       point: LatLng(serviceLocation.lat, serviceLocation.long),
       builder: (ctx) => Container(
         child: GestureDetector(
+          onTap: () {
+
+          },
           child: Container(
             child: Transform.rotate(
               angle: serviceLocation.bearingRadians,
@@ -156,19 +150,19 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   }
 
   Widget _showMap() {
-    LatLng centerOn = myLocationMarker == null ? beehiveMarker.point : myLocationMarker.point;
-    Marker marker = myLocationMarker == null ? beehiveMarker : myLocationMarker;
+    LatLng centerOn = _myLocationMarker == null ? beehiveMarker.point : _myLocationMarker.point;
+    Marker marker = _myLocationMarker == null ? beehiveMarker : _myLocationMarker;
     List<Marker> allMarkers = new List<Marker>();
     allMarkers.addAll([marker]);
-    if(stopMarkers != null) { allMarkers.addAll(stopMarkers); }
-    if(trackedBusMarker != null)  { allMarkers.add(trackedBusMarker); }
+    if(_stopMarkers != null) { allMarkers.addAll(_stopMarkers); }
+    if(_trackedBusMarker != null)  { allMarkers.add(_trackedBusMarker); }
 
     return Flexible(
       child: FlutterMap(
         mapController: mapController,
         options: MapOptions(
           center: centerOn,
-          zoom: defaultZoom,
+          zoom: DEFAULT_ZOOM,
           onTap: (LatLng latLng) {
             if(_stopInfoBottomSheet != null) { _stopInfoBottomSheet.close(); }
           },
@@ -191,22 +185,22 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
 
   _trackBus(StopDeparture stopDeparture) {
     _loadTrackedBus(stopDeparture);
-    timer = Timer.periodic(Duration(seconds: trackUpdateDelay), (timer) {
+    _timer = Timer.periodic(Duration(seconds: TRACK_UPDATE_DELAY), (timer) {
       _loadTrackedBus(stopDeparture);
     });
   }
 
   _resetTrackedBus() {
-    trackedBusMarker = null;
-    if(timer != null) timer.cancel();
+    _trackedBusMarker = null;
+    if(_timer != null) _timer.cancel();
   }
 
   _resetMyLocation() {
-    myLocationMarker = null;
+    _myLocationMarker = null;
   }
 
   _resetNearbyStops() {
-    stopMarkers = null;
+    _stopMarkers = null;
   }
 
   _loadTrackedBus(StopDeparture stopDeparture) {
@@ -215,12 +209,12 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
       setState(() {
         print("_loadTrackedBus ${DateTime.now()}: ${serviceLocation.lat}/${serviceLocation.long}");
         _createBusMarker(serviceLocation);
-        if(moveMap) {
+        if(_moveMap) {
           mapController.move(
-            trackedBusMarker.point,
-            defaultZoom
+            _trackedBusMarker.point,
+            DEFAULT_ZOOM
           );
-          moveMap = false;
+          _moveMap = false;
         }
       });
     });
@@ -243,7 +237,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     );
 
     List<Widget> departures = new List<Widget>();
-    stopDepartures.forEach((stopDeparture) {
+    _stopDepartures.forEach((stopDeparture) {
       List<Widget> subtitles = new List<Widget>();
       if(stopDeparture.departureStatus != null) { subtitles.add(leftAlignText(stopDeparture.departureStatus)); }
       subtitles.add(leftAlignText("Due: ${DateFormat.jm().format(stopDeparture.aimedArrival)}"));
@@ -255,7 +249,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
         onTap: () {
           if(_stopInfoBottomSheet != null) { _stopInfoBottomSheet.close(); }
 
-          moveMap = true;          
+          _moveMap = true;       
           _trackBus(stopDeparture);
           setState(() {
             _resetNearbyStops();
@@ -294,7 +288,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   }
 
   Widget _render() {
-    if(myLocationMarker == null) {
+    if(_myLocationMarker == null) {
       return centerWaiting(buildContext, "Locating where you are...");
     } else {
       List<Widget> children = new List<Widget>();
@@ -322,7 +316,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
 
   @override
   void dispose() {
-    if(timer != null ) { timer.cancel(); }
+    if(_timer != null ) { _timer.cancel(); }
     super.dispose();
 
   }
