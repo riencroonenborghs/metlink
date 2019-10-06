@@ -19,4 +19,16 @@ class ServiceLocationService {
       return serviceLocations;
     });
   }
+
+  Future<ServiceLocation> forStopDeparture(StopDeparture stopDeparture) {
+    var url = searchUrl + stopDeparture.code;
+    return new NetworkService().get(url).then((dynamic res) {
+      var body = json.decode(res.body);
+      List<ServiceLocation> serviceLocations = List<ServiceLocation>();
+      body["Services"].forEach((data) {
+        serviceLocations.add(ServiceLocation.fromMap(data));
+      });
+      return serviceLocations.where((item) { return item.vehicleRef == stopDeparture.vehicleRef; }).first;
+    });
+  }
 }

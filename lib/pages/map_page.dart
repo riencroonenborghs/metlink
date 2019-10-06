@@ -30,16 +30,18 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   StopService stopService = new StopService();
   StopDeparturesService stopDeparturesService = new StopDeparturesService();
   StopsNearbyService stopsNearbyService = new StopsNearbyService();
+  ServiceLocationService serviceLocationService = new ServiceLocationService();
   
   BuildContext buildContext;  
   Marker myLocationMarker;
+  Marker trackedBusMarker;
   PersistentBottomSheetController _stopInfoBottomSheet;
 
   List<Marker> stopMarkers;
-  // Map<String, StopDeparture> stopDepartures;
   List<StopDeparture> stopDepartures;
   bool _fakeRebuild = false;
   Stop _clickedStop;
+  Timer timer;
 
   // --------------------
   // Find things
@@ -131,18 +133,39 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     );
   }
 
+  Marker _createBusMarker(ServiceLocation serviceLocation) {
+    trackedBusMarker = Marker(
+      width: 45.0,
+      height: 45.0,
+      point: LatLng(serviceLocation.lat, serviceLocation.long),
+      builder: (ctx) => Container(
+        child: GestureDetector(
+          child: Container(
+            child: Transform.rotate(
+              angle: serviceLocation.bearingRadians,
+              child: serviceLocation.bearing < 180 ? 
+                Image.asset("assets/images/bus-primary-going-east.png") :
+                Image.asset("assets/images/bus-primary-going-west.png")
+            )
+          )
+        )
+      )
+    );
+  }
+
   Widget _showMap() {
     LatLng centerOn = myLocationMarker == null ? beehiveMarker.point : myLocationMarker.point;
     Marker marker = myLocationMarker == null ? beehiveMarker : myLocationMarker;
     List<Marker> allMarkers = new List<Marker>();
     allMarkers.addAll([marker]);
     if(stopMarkers != null) { allMarkers.addAll(stopMarkers); }
+    if(trackedBusMarker != null)  { allMarkers.add(trackedBusMarker); }
 
     return Flexible(
       child: FlutterMap(
         options: MapOptions(
           center: centerOn,
-          zoom: 16.0,
+          zoom: 15.0,
           onTap: (LatLng latLng) {
             if(_stopInfoBottomSheet != null) { _stopInfoBottomSheet.close(); }
           },
@@ -160,6 +183,22 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
         ]
       )
     );
+  }
+
+  _trackBus(StopDeparture stopDeparture) {
+    _loadTrackedBus(stopDeparture);
+    timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      _loadTrackedBus(stopDeparture);
+    });
+  }
+
+  _loadTrackedBus(StopDeparture stopDeparture) {
+    serviceLocationService.forStopDeparture(stopDeparture).then((ServiceLocation serviceLocation) {
+      if(serviceLocation == null) return;
+      setState(() {
+        _createBusMarker(serviceLocation);
+      });
+    });
   }
 
   Widget _stopInfo() {
@@ -189,7 +228,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
         subtitle: Column(children: subtitles),
         trailing: Icon(Icons.chevron_right),
         onTap: () {
-          
+          _trackBus(stopDeparture);
         }
       );
       departures.add(tile);
@@ -250,20 +289,16 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     }
   }
 
-  // @override
-  // void dispose() {
-  //   if(timer != null ) { timer.cancel(); }
-  //   super.dispose();
-  // }
+  @override
+  void dispose() {
+    if(timer != null ) { timer.cancel(); }
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
     _findMyLocation();
-  //   _reload();
-  //   timer = Timer.periodic(Duration(seconds: 10), (timer) {
-  //     _reload();
-  //   });
   }
 
   @override

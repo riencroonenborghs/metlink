@@ -14,7 +14,7 @@ class ServiceLocation {
   double _bearingRadians;
   String _approxAddress;
   bool _triedResolvingAddress = false;
-  StopDeparture _stopDeparture;
+  // StopDeparture _stopDeparture;
 
   String get direction => _direction;
   double get lat => _lat;
@@ -27,7 +27,7 @@ class ServiceLocation {
   double get bearingRadians => _bearingRadians;
   String get approxAddress => _approxAddress;
   bool get triedResolvingAddress => _triedResolvingAddress;
-  StopDeparture get stopDeparture => _stopDeparture;
+  // StopDeparture get stopDeparture => _stopDeparture;
 
   ServiceLocation.fromMap(dynamic obj) {
     this._direction  = obj["Direction"];
@@ -39,7 +39,7 @@ class ServiceLocation {
     this._destinationStopName = obj["DestinationStopName"];
     this._bearing = double.parse(obj["Bearing"]);
     this._bearingRadians =  this._bearing * pi / 180; // Deg × π/180 = Radians
-    this._stopDeparture = StopDeparture.fromMap(obj["Service"]);
+    // this._stopDeparture = StopDeparture.fromMap(obj["Service"]);
   }
 
   Future<void> getApproxAddress() async {
