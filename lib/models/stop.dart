@@ -21,4 +21,11 @@ class Stop {
     this._lat = obj["Lat"];
     this._long = obj["Long"];
   }
+
+  Stop.fromServiceMap(dynamic obj) {
+    this._code = obj["Sms"];
+    List<String> latAndLng = obj["LatLng"].split(",");
+    this._lat = double.parse(latAndLng[0]);
+    this._long = double.parse(latAndLng[1]);
+  }
 }

@@ -12,3 +12,5 @@ Marker beehiveMarker = Marker(
     child: Icon(Icons.location_on)
   )
 );
+
+Color routeColor = Color.fromRGBO(237, 130, 39, 1);

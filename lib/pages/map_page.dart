@@ -29,23 +29,27 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
   static num TRACK_UPDATE_DELAY = 2;
   static String TITLE = "Metlink Bus Tracker";
   MapController mapController;
-  bool _moveMap = false;
+  
 
   StopSearchService stopSearchService = new StopSearchService();
   StopService stopService = new StopService();
   StopDeparturesService stopDeparturesService = new StopDeparturesService();
   StopsNearbyService stopsNearbyService = new StopsNearbyService();
   ServiceLocationService serviceLocationService = new ServiceLocationService();
+  ServiceMapService serviceMapService = new ServiceMapService();
   
   BuildContext buildContext;  
   Marker _myLocationMarker;
   Marker _trackedBusMarker;
   PersistentBottomSheetController _stopInfoBottomSheet;
   PersistentBottomSheetController _busInfoBottomSheet;
+  ServiceMap _selectedServiceMap;
 
   List<Marker> _stopMarkers;
   List<StopDeparture> _stopDepartures;
   bool _fakeRebuild = false;
+  bool _moveMap = false;
+  bool _showServiceMap = false;
   Stop _clickedStop;
   Timer _timer;
 
@@ -59,7 +63,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
       foundStops.forEach((Stop stop) {
         _stopMarkers.add(_createStopMarker(stop));
       });
-      setState(() { _fakeRebuild = true; });
+      setState(() { _fakeRebuild = true; });      
     });
   }
    
@@ -204,6 +208,11 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
             urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
             subdomains: ["a", "b", "c"]
           ),
+          PolylineLayerOptions(
+            polylines: _showServiceMap && _selectedServiceMap != null ?
+              _selectedServiceMap.generatePolylines(routeColor) :
+              []
+          ),
           MarkerLayerOptions(markers: allMarkers)
         ]
       )
@@ -228,6 +237,11 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
 
   _resetNearbyStops() {
     _stopMarkers = null;
+  }
+
+  _resetServiceMap() {
+    _showServiceMap = false;
+    _selectedServiceMap = null;
   }
 
   _closeBottomSheets() {
@@ -266,7 +280,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
         _scaffoldKey.currentState.showSnackBar(
           SnackBar(
             backgroundColor: Colors.white,
-            content: errorMessage("Cound not find your bus.")
+            content: errorMessage("Cound not find your bus on the road.")
           )
         );
         return;
@@ -298,11 +312,15 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
       ListTile tile = ListTile(
         title: Text("${stopDeparture.code} - ${stopDeparture.name}"),
         subtitle: Text(subtitle),
-        trailing: Icon(Icons.location_on, color: Theme.of(context).accentColor),
+        trailing: Icon(Icons.location_on, color: Theme.of(context).primaryColor),
         onTap: () {
           _closeBottomSheets();
           _moveMap = true;       
           _trackBus(stopDeparture);
+          serviceMapService.search(stopDeparture.code).then((ServiceMap foundServiceMap) {
+            _selectedServiceMap = foundServiceMap;
+            _showServiceMap = true;
+          });
           setState(() {
             _resetNearbyStops();
           });
@@ -370,6 +388,16 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
             onPressed: () {
               _resetTrackedBus();
               _findStopsNearby(_myLocationMarker.point);
+              _resetServiceMap();
+              setState(() { _fakeRebuild = true; });
+            }
+          )
+        );
+        iconChildren.add(
+          IconButton(
+            icon: Icon(Icons.remove_red_eye, color: _showServiceMap ? routeColor : Colors.black),
+            onPressed: () {
+              setState(() { _showServiceMap = !_showServiceMap; });
             }
           )
         );
@@ -386,7 +414,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
       padding: EdgeInsets.zero,
       children: [
         DrawerHeader(
-          child: Text(TITLE),
+          child: Center(child: Text(TITLE, style: TextStyle(fontSize: 24, color: Colors.white))),
           decoration: BoxDecoration(
             color: Theme.of(context).primaryColor
           ),
@@ -411,7 +439,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     super.dispose();
 
   }
-
+  
   @override
   void initState() {
     super.initState();
