@@ -26,7 +26,6 @@ class _TrackerPageState extends State<TrackerPage> with UtilsWidget {
   static double DEFAULT_ZOOM = 15.0;
   static num TRACK_UPDATE_DELAY = 2;
   MapController mapController;
-  
 
   StopSearchService stopSearchService = new StopSearchService();
   StopService stopService = new StopService();
@@ -356,7 +355,7 @@ class _TrackerPageState extends State<TrackerPage> with UtilsWidget {
 
   Widget _render() {
     if(_myLocationMarker == null) {
-      return centerWaiting(buildContext, "Locating where you are...");
+      return centerWaiting(buildContext, "Locating where you are ...");
     } else {
       List<Widget> stackChildren = new List<Widget>();
       stackChildren.add(

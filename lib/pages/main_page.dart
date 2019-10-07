@@ -40,8 +40,6 @@ class _MainPageState extends State<MainPage> with UtilsWidget {
     });
   }
   
-  
-
   Widget _render() {
     return Center(
       child: _widgetOptions.elementAt(_selectedIndex),

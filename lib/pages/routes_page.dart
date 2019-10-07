@@ -23,8 +23,14 @@ class RoutesPage extends StatefulWidget {
 
 class _RoutesPageState extends State<RoutesPage> with UtilsWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  static double DEFAULT_ZOOM = 12.0;
-  MapController mapController;
+  static double DEFAULT_ZOOM = 10.0;
+  MapController _mapController;
+  AssetDataService _assetDataService = new AssetDataService();
+  ServiceMapService serviceMapService = new ServiceMapService();
+  List<MetlinkRoute> _allMetlinkRoutes;
+  MetlinkRoute _selectedMetlinkRoute = null;
+  bool _loadingMetlinkRoutes = true;
+  ServiceMap _selectedServiceMap;
   
   BuildContext buildContext;
 
@@ -34,7 +40,7 @@ class _RoutesPageState extends State<RoutesPage> with UtilsWidget {
 
     return Flexible(
       child: FlutterMap(
-        mapController: mapController,
+        mapController: _mapController,
         options: MapOptions(
           center: centerOn,
           zoom: DEFAULT_ZOOM,
@@ -48,18 +54,60 @@ class _RoutesPageState extends State<RoutesPage> with UtilsWidget {
             urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
             subdomains: ["a", "b", "c"]
           ),
-          // PolylineLayerOptions(
-          //   polylines: _showServiceMap && _selectedServiceMap != null ?
-          //     _selectedServiceMap.generatePolylines(routeColor) :
-          //     []
-          // ),
+          PolylineLayerOptions(
+            polylines: _selectedServiceMap != null ?
+              _selectedServiceMap.generatePolylines(routeColor) :
+              []
+          ),
           // MarkerLayerOptions(markers: allMarkers)
         ]
       )
     );
   }
 
+  Widget _metlinkRoutesDropDown() {
+    return DropdownButton<MetlinkRoute>(
+      isExpanded: true,
+      value: _selectedMetlinkRoute,
+      icon: Icon(Icons.keyboard_arrow_down),
+      iconSize: 24,
+      elevation: 16,
+      style: TextStyle(
+        color: Theme.of(context).primaryColor
+      ),
+      underline: Container(
+        height: 0
+      ),
+      onChanged: (MetlinkRoute newMetlinkRoute) {
+        serviceMapService.search(newMetlinkRoute.shortName).then((ServiceMap foundServiceMap) {
+          setState(() {
+            _selectedServiceMap = foundServiceMap;
+          });
+        });
+
+        setState(() {
+          _selectedMetlinkRoute = newMetlinkRoute;
+        });
+      },
+      items: _allMetlinkRoutes
+        .map<DropdownMenuItem<MetlinkRoute>>((MetlinkRoute value) {
+          return DropdownMenuItem<MetlinkRoute>(
+            value: value,
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text("${value.shortName} (${value.agencyId}) - ${value.longName}")
+            )
+          );
+        })
+        .toList()
+    );
+  }
+
   Widget _render() {
+    if(_loadingMetlinkRoutes) {
+      return centerWaiting(buildContext, "Loading routes ...");
+    }
+
     List<Widget> stackChildren = new List<Widget>();
     stackChildren.add(
       Column(
@@ -69,8 +117,19 @@ class _RoutesPageState extends State<RoutesPage> with UtilsWidget {
       )
     );
 
-    List<Widget> iconChildren = new List<Widget>();
-    stackChildren.add(Row(children: iconChildren));
+    stackChildren.add(
+      Column(
+        children: [        
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Container(
+              color: Colors.white,
+              child: _metlinkRoutesDropDown()
+            )
+          )
+        ]
+      )
+    );
 
     return Stack(
       children: stackChildren
@@ -80,7 +139,11 @@ class _RoutesPageState extends State<RoutesPage> with UtilsWidget {
   @override
   void initState() {
     super.initState();
-    mapController = MapController();
+    _mapController = MapController();
+    _assetDataService.loadMetlinkRoutes().then((_) {
+      _allMetlinkRoutes = _assetDataService.metlinkRoutes;
+      setState(() { _loadingMetlinkRoutes = false; });
+    });
   }
 
   @override
