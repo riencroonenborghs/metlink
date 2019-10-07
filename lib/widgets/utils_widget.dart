@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-// import 'package:intl/intl.dart';
+import "package:metlink/pages/pages.dart";
 
 class UtilsWidget {
   Widget waiting(BuildContext context, String label) {
@@ -91,5 +91,33 @@ class UtilsWidget {
   // }
   // showErrorMessage(GlobalKey<ScaffoldState> scaffoldKey, String message) {
   //   scaffoldKey.currentState.showSnackBar(ErrorSnackBar(message));
+  // }
+
+  // Widget drawer(BuildContext context, String title) {
+  //   return ListView(
+  //     padding: EdgeInsets.zero,
+  //     children: [
+  //       DrawerHeader(
+  //         child: Center(child: Text(title, style: TextStyle(fontSize: 24, color: Colors.white))),
+  //         decoration: BoxDecoration(
+  //           color: Theme.of(context).primaryColor
+  //         ),
+  //       ),
+  //       ListTile(
+  //         title: Text("Find a route"),
+  //         onTap: () {
+  //           Navigator.push(
+  //             context,
+  //             MaterialPageRoute(builder: (context) => FindRoutePage()),
+  //           );
+  //         }
+  //       ),
+  //       ListTile(
+  //         title: Text("Timetables"),
+  //         onTap: () {
+  //         }
+  //       )
+  //     ]
+  //   );
   // }
 }

@@ -14,20 +14,17 @@ import "package:metlink/blocs/blocs.dart";
 import "package:metlink/pages/pages.dart";
 import "package:metlink/models/models.dart";
 
-class MapPage extends StatefulWidget {
-  final ServiceLocation serviceLocation;
-
-  MapPage({Key key, @required this.serviceLocation}) : super(key: key);
+class TrackerPage extends StatefulWidget {
+  TrackerPage({Key key}) : super(key: key);
 
   @override
-  _MapPageState createState() => _MapPageState();
+  _TrackerPageState createState() => _TrackerPageState();
 }
 
-class _MapPageState extends State<MapPage> with UtilsWidget {
+class _TrackerPageState extends State<TrackerPage> with UtilsWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   static double DEFAULT_ZOOM = 15.0;
   static num TRACK_UPDATE_DELAY = 2;
-  static String TITLE = "Metlink Bus Tracker";
   MapController mapController;
   
 
@@ -409,30 +406,6 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
     }
   }
 
-  Widget _drawer() {
-    return ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        DrawerHeader(
-          child: Center(child: Text(TITLE, style: TextStyle(fontSize: 24, color: Colors.white))),
-          decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor
-          ),
-        ),
-        ListTile(
-          title: Text('Item 1'),
-          onTap: () {
-          }
-        ),
-        ListTile(
-          title: Text('Item 2'),
-          onTap: () {
-          }
-        )
-      ]
-    );
-  }
-
   @override
   void dispose() {
     if(_timer != null ) { _timer.cancel(); }
@@ -453,13 +426,7 @@ class _MapPageState extends State<MapPage> with UtilsWidget {
 
     return Scaffold(
       key: _scaffoldKey,
-      appBar: AppBar(
-        title: Text(TITLE)
-      ),
-      body: _render(),
-      drawer: Drawer(
-        child: _drawer()
-      )
+      body: _render()
     );
   }
 }
