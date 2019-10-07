@@ -23,7 +23,7 @@ class RoutesPage extends StatefulWidget {
 
 class _RoutesPageState extends State<RoutesPage> with UtilsWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  static double DEFAULT_ZOOM = 10.0;
+  static double DEFAULT_ZOOM = 12.0;
   MapController _mapController;
   AssetDataService _assetDataService = new AssetDataService();
   ServiceMapService serviceMapService = new ServiceMapService();
@@ -82,6 +82,10 @@ class _RoutesPageState extends State<RoutesPage> with UtilsWidget {
         serviceMapService.search(newMetlinkRoute.shortName).then((ServiceMap foundServiceMap) {
           setState(() {
             _selectedServiceMap = foundServiceMap;
+            _mapController.move(
+              _selectedServiceMap.paths[0][0],
+              DEFAULT_ZOOM
+            );
           });
         });
 
@@ -95,7 +99,7 @@ class _RoutesPageState extends State<RoutesPage> with UtilsWidget {
             value: value,
             child: Padding(
               padding: EdgeInsets.all(8.0),
-              child: Text("${value.shortName} (${value.agencyId}) - ${value.longName}")
+              child: Text("${value.shortName} - ${value.longName} (${value.agencyId})")
             )
           );
         })
