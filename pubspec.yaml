@@ -30,6 +30,7 @@ dependencies:
   geolocator: ^5.1.4
   intl: ^0.16.0
   csv: ^4.0.3
+  webview_flutter: ^0.3.14+1
 
 dev_dependencies:
   flutter_test:

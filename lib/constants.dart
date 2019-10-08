@@ -3,6 +3,7 @@ import "package:latlong/latlong.dart";
 import "package:flutter/material.dart";
 
 String apiUrl = "https://www.metlink.org.nz/api/v1";
+String busTimetablesUrl = "https://www.metlink.org.nz/timetables/bus";
 String mainTitle = "Metlink Bus Tracker";
 
 Marker beehiveMarker = Marker(

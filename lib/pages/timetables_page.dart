@@ -2,10 +2,7 @@ import "dart:async";
 import "dart:io";
 import "package:intl/intl.dart";
 import "package:flutter/material.dart";
-import "package:flutter_bloc/flutter_bloc.dart";
-import "package:flutter_map/flutter_map.dart";
-import "package:latlong/latlong.dart";
-import "package:geolocator/geolocator.dart";
+import 'package:webview_flutter/webview_flutter.dart';
 
 import "package:metlink/constants.dart";
 import "package:metlink/widgets/widgets.dart";
@@ -23,12 +20,83 @@ class TimetablesPage extends StatefulWidget {
 
 class _TimetablesPageState extends State<TimetablesPage> with UtilsWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  String mainTitle = "Timetables";
-  
-  BuildContext buildContext;  
+  AssetDataService _assetDataService = new AssetDataService();
+  bool _loadingMetlinkRoutes = true;
+  List<MetlinkRoute> _allMetlinkRoutes;
+  MetlinkRoute _selectedMetlinkRoute = null;  
+  BuildContext buildContext;
+
+  Widget _metlinkRoutesDropDown() {
+    return DropdownButton<MetlinkRoute>(
+      isExpanded: true,
+      value: _selectedMetlinkRoute,
+      icon: Icon(Icons.keyboard_arrow_down),
+      iconSize: 24,
+      elevation: 16,
+      style: TextStyle(
+        color: Theme.of(context).primaryColor
+      ),
+      underline: Container(
+        height: 0
+      ),
+      onChanged: (MetlinkRoute newMetlinkRoute) {
+        setState(() {
+          _selectedMetlinkRoute = newMetlinkRoute;
+        });
+      },
+      items: _allMetlinkRoutes
+        .map<DropdownMenuItem<MetlinkRoute>>((MetlinkRoute value) {
+          return DropdownMenuItem<MetlinkRoute>(
+            value: value,
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text("${value.shortName} - ${value.longName} (${value.agencyId})")
+            )
+          );
+        })
+        .toList()
+    );
+  }
 
   Widget _render() {
-    return Text("qwe");
+    if(_loadingMetlinkRoutes) {
+      return centerWaiting(buildContext, "Loading routes ...");
+    }
+
+    List<Widget> children = new List<Widget>();
+    children.add(
+      Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Container(
+          color: Colors.white,
+          child: _metlinkRoutesDropDown()
+        )
+      )
+    );
+    if(_selectedMetlinkRoute != null) {
+      children.add(
+        Flexible(
+          child: WebView(
+            key: UniqueKey(),
+            javascriptMode: JavascriptMode.unrestricted,
+            initialUrl: "${busTimetablesUrl}/${_selectedMetlinkRoute.shortName}"
+          )
+        )
+      );  
+    }
+
+    return Column(
+      children: children
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _assetDataService.loadMetlinkRoutes().then((_) {
+      _allMetlinkRoutes = _assetDataService.metlinkRoutes;
+      setState(() { _loadingMetlinkRoutes = false; });
+    });
   }
 
   @override
@@ -37,13 +105,7 @@ class _TimetablesPageState extends State<TimetablesPage> with UtilsWidget {
 
     return Scaffold(
       key: _scaffoldKey,
-      // appBar: AppBar(
-      //   title: Text(mainTitle)
-      // ),
-      body: _render(),
-      // drawer: Drawer(
-      //   child: drawer(context, mainTitle)
-      // )
+      body: _render()
     );
   }
 }
