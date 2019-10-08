@@ -24,7 +24,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> with UtilsWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();  
   
-  BuildContext buildContext;  
+  BuildContext buildContext;
   
   int _selectedIndex = 0;
   TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
