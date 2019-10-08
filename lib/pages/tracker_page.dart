@@ -24,7 +24,7 @@ class TrackerPage extends StatefulWidget {
 class _TrackerPageState extends State<TrackerPage> with UtilsWidget {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   static double DEFAULT_ZOOM = 15.0;
-  static num TRACK_UPDATE_DELAY = 2;
+  static num TRACK_UPDATE_DELAY = 5;
   MapController mapController;
 
   StopSearchService stopSearchService = new StopSearchService();
@@ -48,6 +48,8 @@ class _TrackerPageState extends State<TrackerPage> with UtilsWidget {
   bool _showServiceMap = false;
   Stop _clickedStop;
   Timer _timer;
+  Timer _displayTimer;
+  num _displayTimerValue;
 
   // --------------------
   // Find things
@@ -220,11 +222,19 @@ class _TrackerPageState extends State<TrackerPage> with UtilsWidget {
     _timer = Timer.periodic(Duration(seconds: TRACK_UPDATE_DELAY), (timer) {
       _loadTrackedBus(stopDeparture);
     });
+    _displayTimerValue = 0;
+    _displayTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        _displayTimerValue += 1;
+        if(_displayTimerValue > TRACK_UPDATE_DELAY) { _displayTimerValue = 0; }
+      });
+    });
   }
 
   _resetTrackedBus() {
     _trackedBusMarker = null;
     if(_timer != null) _timer.cancel();
+    if(_displayTimer != null) _displayTimer.cancel();
   }
 
   _resetMyLocation() {
@@ -366,10 +376,21 @@ class _TrackerPageState extends State<TrackerPage> with UtilsWidget {
         )
       );
 
-      List<Widget> iconChildren = new List<Widget>();
-      stackChildren.add(Row(children: iconChildren));
+      // List<Widget> rowChildren = new List<Widget>();
+      List<Widget> rowLeftChildren = new List<Widget>();
+      List<Widget> rowRightChildren = new List<Widget>();
 
-      iconChildren.add(
+      stackChildren.add(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(children: rowLeftChildren),
+            Row(children: rowRightChildren)
+          ]
+        )
+      );
+
+      rowLeftChildren.add(
         IconButton(
           icon: Icon(Icons.location_searching),
           onPressed: () {
@@ -378,7 +399,7 @@ class _TrackerPageState extends State<TrackerPage> with UtilsWidget {
         )
       );
       if(_trackedBusMarker != null) {
-        iconChildren.add(
+        rowLeftChildren.add(
           IconButton(
             icon: Icon(Icons.location_off, color: Theme.of(context).primaryColor),
             onPressed: () {
@@ -389,12 +410,25 @@ class _TrackerPageState extends State<TrackerPage> with UtilsWidget {
             }
           )
         );
-        iconChildren.add(
+        rowLeftChildren.add(
           IconButton(
             icon: Icon(Icons.remove_red_eye, color: _showServiceMap ? routeColor : Colors.black),
             onPressed: () {
               setState(() { _showServiceMap = !_showServiceMap; });
             }
+          )
+        );
+        rowRightChildren.add(
+          Container(
+            width: 26, // 18+8,
+            height: 18,
+            child: Padding(
+              padding: EdgeInsets.only(right: 8.0),
+              child: CircularProgressIndicator(
+                value: _displayTimerValue == 0 ? 0.0 : _displayTimerValue / TRACK_UPDATE_DELAY,
+                valueColor: new AlwaysStoppedAnimation<Color>(routeColor)
+              )
+            )
           )
         );
       }
@@ -408,6 +442,7 @@ class _TrackerPageState extends State<TrackerPage> with UtilsWidget {
   @override
   void dispose() {
     if(_timer != null ) { _timer.cancel(); }
+    if(_displayTimer != null ) { _displayTimer.cancel(); }
     super.dispose();
 
   }
