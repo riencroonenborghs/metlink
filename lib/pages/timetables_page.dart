@@ -29,6 +29,10 @@ class _TimetablesPageState extends State<TimetablesPage> with UtilsWidget {
   Widget _metlinkRoutesDropDown() {
     return DropdownButton<MetlinkRoute>(
       isExpanded: true,
+      hint: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Text("Select a route")
+      ),
       value: _selectedMetlinkRoute,
       icon: Icon(Icons.keyboard_arrow_down),
       iconSize: 24,
@@ -68,7 +72,7 @@ class _TimetablesPageState extends State<TimetablesPage> with UtilsWidget {
       Padding(
         padding: EdgeInsets.all(8.0),
         child: Container(
-          color: Colors.white,
+          // color: Colors.white,
           child: _metlinkRoutesDropDown()
         )
       )

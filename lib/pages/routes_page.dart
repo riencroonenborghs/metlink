@@ -68,6 +68,10 @@ class _RoutesPageState extends State<RoutesPage> with UtilsWidget {
   Widget _metlinkRoutesDropDown() {
     return DropdownButton<MetlinkRoute>(
       isExpanded: true,
+      hint: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Text("Select a route")
+      ),
       value: _selectedMetlinkRoute,
       icon: Icon(Icons.keyboard_arrow_down),
       iconSize: 24,
