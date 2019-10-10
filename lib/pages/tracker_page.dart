@@ -67,18 +67,8 @@ class _TrackerPageState extends State<TrackerPage> with UtilsWidget {
    
   _findMyLocation() {
     Geolocator().getLastKnownPosition(desiredAccuracy: LocationAccuracy.high).then((Position position) {
-      // -41.2845402,174.7242675
-      position = Position(
-        latitude: -41.2845402,
-        longitude: 174.7242675,
-        timestamp: null,
-        mocked: null,
-        accuracy: null,
-        altitude: null,
-        heading: null,
-        speed: null,
-        speedAccuracy: null
-      );
+      // for dev
+      if(homePosition != null) { position = homePosition; }
 
       LatLng latLng = LatLng(position.latitude, position.longitude);
       _createMyLocationMarker(latLng);

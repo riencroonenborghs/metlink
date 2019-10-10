@@ -1,5 +1,6 @@
 import "package:flutter_map/flutter_map.dart";
 import "package:latlong/latlong.dart";
+import "package:geolocator/geolocator.dart";
 import "package:flutter/material.dart";
 
 String apiUrl = "https://www.metlink.org.nz/api/v1";
@@ -14,5 +15,18 @@ Marker beehiveMarker = Marker(
     child: Icon(Icons.location_on)
   )
 );
+
+Position homePosition = Position(
+  latitude: -41.2845402,
+  longitude: 174.7242675,
+  timestamp: null,
+  mocked: null,
+  accuracy: null,
+  altitude: null,
+  heading: null,
+  speed: null,
+  speedAccuracy: null
+);
+unsetHomePosition() { homePosition = null; }
 
 Color routeColor = Color.fromRGBO(237, 130, 39, 1);
