@@ -300,7 +300,13 @@ class _TrackerPageState extends State<TrackerPage> with UtilsWidget {
 
     List<Widget> departures = new List<Widget>();
     _stopDepartures.forEach((stopDeparture) {
-      String subtitle = "Due: ${DateFormat.jm().format(stopDeparture.aimedArrival)}";
+      String subtitle = "";
+      if(stopDeparture.aimedDeparture != null && stopDeparture.aimedArrival == null) {
+        subtitle += "Due: ${DateFormat.jm().format(stopDeparture.aimedDeparture)}";
+      }
+      if(stopDeparture.aimedArrival != null && stopDeparture.aimedDeparture != null) {
+        subtitle += "Due: ${DateFormat.jm().format(stopDeparture.aimedArrival)}";
+      }
       if(stopDeparture.departureStatus != null) {
         if(stopDeparture.departureStatus == "delayed") { subtitle += " Delayed."; }
       }
